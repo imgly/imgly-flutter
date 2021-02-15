@@ -387,7 +387,7 @@ extension FlutterIMGLY {
         }
 
         // Filters
-        let filterCategoryKeyPath = "filter.category"
+        let filterCategoryKeyPath = "filter.categories"
         let filterCategoryResolvingKeyPaths = ["thumbnailURI"]
         let filterKeyPath = "items"
         let filterResolvingKeyPaths = ["lutURI"]

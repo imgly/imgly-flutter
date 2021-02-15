@@ -17,9 +17,9 @@
 
 # Flutter plugin for IMG.LY SDK
 
-**:warning: This library is automatically integrated when adding the plugin packages `photoeditor_sdk` and/or `videoeditor_sdk` as a dependency. Do NOT integrate `imgly_sdk` manually!**
+**⚠️ This library is automatically integrated when adding the plugin packages `photo_editor_sdk` and/or `video_editor_sdk` as a dependency. Do NOT integrate `imgly_sdk` manually!**
 
-A plugin containing the shared resources for [`photoeditor_sdk`](https://pub.dev/packages/photoeditor_sdk) and [`videoeditor_sdk`](https://pub.dev/packages/videoeditor_sdk).
+A plugin containing the shared resources for [`photo_editor_sdk`](https://pub.dev/packages/photo_editor_sdk) and [`video_editor_sdk`](https://pub.dev/packages/video_editor_sdk).
 
 ## License Terms
 
@@ -28,4 +28,4 @@ A commercial license is required for any app or service that has any form of mon
 
 ## Support and License
 
-Use our [service desk](http://support.photoeditorsdk.com) for bug reports or support requests. To request a commercial license, please use the [license request form](https://account.photoeditorsdk.com/pricing?utm_campaign=Projects&utm_source=Github&utm_medium=IMGLY&utm_content=Flutter) on our website.
+Use our [service desk](https://support.photoeditorsdk.com) for bug reports or support requests. To request a commercial license, please use the [license request form](https://account.photoeditorsdk.com/pricing?utm_campaign=Projects&utm_source=Github&utm_medium=IMGLY&utm_content=Flutter) on our website.

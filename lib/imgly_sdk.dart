@@ -2063,7 +2063,7 @@ enum Tool {
   /// Transform tool.
   transform,
 
-  /// Trim tool **(for videoeditor_sdk only)**.
+  /// Trim tool **(for video_editor_sdk only)**.
   trim
 }
 

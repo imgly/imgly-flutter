@@ -208,7 +208,7 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
     }
 
     // Resolve the stickers.
-    val stickerCategoryKeyPath = "sticker.catgeories"
+    val stickerCategoryKeyPath = "sticker.categories"
     val stickerCategoryResolvingKeyPaths = listOf("thumbnailURI")
     val stickerKeyPath = "items"
     val stickerResolvingKeyPaths = listOf("thumbnailURI", "stickerURI")
@@ -219,7 +219,7 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
     }
 
     // Resolve the filters.
-    val filterCategoryKeyPath = "filter.category"
+    val filterCategoryKeyPath = "filter.categories"
     val filterCategoryResolvingKeyPaths = listOf("thumbnailURI")
     val filterKeyPath = "items"
     val filterResolvingKeyPaths = listOf("lutURI")

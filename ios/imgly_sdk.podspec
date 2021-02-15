@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.version          = content['version']
   s.summary          = content['description']
   s.description      = <<-DESC
-The official base plugin for the photoeditor_sdk and videoeditor_sdk Flutter plugins. Integrate the creative engine of tomorrow\'s world - in minutes!
+The official base plugin for the photo_editor_sdk and video_editor_sdk Flutter plugins. Integrate the creative engine of tomorrow\'s world - in minutes!
                        DESC
   s.homepage         = content['homepage']
   s.license          = { :file => '../LICENSE' }
