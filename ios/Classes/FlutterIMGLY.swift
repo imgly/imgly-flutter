@@ -350,6 +350,26 @@ extension FlutterIMGLY {
     private func resolveAssets(for configuration: IMGLYDictionary) -> IMGLYDictionary? {
         var resolvedConfiguration = configuration
 
+        // Audio
+        let audioCategoriesKeyPath = "audio.categories"
+        let audioCategoryResolvingKeyPaths = ["thumbnailURI"]
+        let audioKeyPath = "items"
+        let audioResolvingKeyPaths = ["thumbnailURI", "audioURI"]
+
+        if let audioCategories = self.resolveNestedCategories(from: resolvedConfiguration, at: audioCategoriesKeyPath, with: audioCategoryResolvingKeyPaths, at: audioKeyPath, with: audioResolvingKeyPaths) {
+            resolvedConfiguration.setValue(audioCategories, forKeyPath: audioCategoriesKeyPath)
+        }
+
+        // Video composition
+        let videoCategoriesKeyPath = "composition.categories"
+        let videoCategoryResolvingKeyPaths = ["thumbnailURI"]
+        let videoKeyPath = "items"
+        let videoResolvingKeyPaths = ["thumbnailURI", "videoURI"]
+
+        if let videoCategories = self.resolveNestedCategories(from: resolvedConfiguration, at: videoCategoriesKeyPath, with: videoCategoryResolvingKeyPaths, at: videoKeyPath, with: videoResolvingKeyPaths) {
+            resolvedConfiguration.setValue(videoCategories, forKeyPath: videoCategoriesKeyPath)
+        }
+
         // Frames
         let frameKeyPath = "frame.items"
         let imageGroupTopKeyPaths = ["imageGroups.top.startURI", "imageGroups.top.midURI", "imageGroups.top.endURI"]
@@ -364,7 +384,7 @@ extension FlutterIMGLY {
 
         // Overlays
         let overlayKeyPath = "overlay.items"
-        let overlayResolvingKeyPaths = ["thumbnailURL", "overlayURI"]
+        let overlayResolvingKeyPaths = ["thumbnailURI", "overlayURI"]
         if let resolvedOverlays = self.resolveCategories(from: resolvedConfiguration, at: overlayKeyPath, with: overlayResolvingKeyPaths) {
             resolvedConfiguration.setValue(resolvedOverlays, forKeyPath: overlayKeyPath)
         }

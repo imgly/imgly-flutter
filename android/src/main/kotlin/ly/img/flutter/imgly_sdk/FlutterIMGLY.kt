@@ -120,8 +120,8 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
    * @param asset The relative path to the license within the assets folder.
    */
   fun resolveLicense(asset: String?) {
-    val validAsset = asset + ".android"
-    if (validAsset != null) {
+    if (asset != null) {
+      val validAsset = "$asset.android"
       binding?.flutterAssets?.getAssetFilePathBySubpath(validAsset)?.also { path ->
         val licenseContent = binding?.applicationContext?.assets?.open(path)?.bufferedReader().use { it?.readText() }
         licenseContent?.also {
@@ -177,6 +177,28 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
    * @return The resolved configuration as a *MutableHashMap<String, Any>*.
    */
   fun resolveAssets(source: MutableMap<String, Any>) : MutableMap<String, Any> {
+    // Resolve the audio clips.
+    val audioCategoryKeyPath = "audio.categories"
+    val audioCategoryResolvingKeyPaths = listOf("thumbnailURI")
+    val audioKeyPath = "items"
+    val audioResolvingKeyPaths = listOf("thumbnailURI", "audioURI")
+
+    val resolvedAudioCategories = this.resolveNestedCategories(source, audioCategoryKeyPath, audioCategoryResolvingKeyPaths, audioKeyPath, audioResolvingKeyPaths)
+    if (resolvedAudioCategories != null) {
+      IMGLYSetValue(source, audioCategoryKeyPath, resolvedAudioCategories)
+    }
+
+    // Resolve the video clips.
+    val videoCategoryKeyPath = "composition.categories"
+    val videoCategoryResolvingKeyPaths = listOf("thumbnailURI")
+    val videoKeyPath = "items"
+    val videoResolvingKeyPaths = listOf("thumbnailURI", "videoURI")
+
+    val resolvedVideoCategories = this.resolveNestedCategories(source, videoCategoryKeyPath, videoCategoryResolvingKeyPaths, videoKeyPath, videoResolvingKeyPaths)
+    if (resolvedVideoCategories != null) {
+      IMGLYSetValue(source, videoCategoryKeyPath, resolvedVideoCategories)
+    }
+
     // Resolve the frames.
     val frameKeyPath = "frame.items"
     val imageGroupTopKeyPaths = listOf("imageGroups.top.startURI", "imageGroups.top.midURI", "imageGroups.top.endURI")
@@ -241,7 +263,7 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
   class EmbeddedAsset(source: String) {
 
     /** The resolved uri to integrate nto the configuration.*/
-    val resolvedURI: String?
+    val resolvedURI: String
       get() = resolveURI()
 
     /** The unresolved *source* of the embedded image. */
@@ -251,7 +273,7 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
      * Resolves the embedded URI into a valid *String* value.
      * @return Valid URI as *String* if any.
      */
-    private fun resolveURI() : String? {
+    private fun resolveURI() : String {
       return if (source.startsWith("/") || source.contains("://") ) {
         source
       } else {
@@ -270,22 +292,19 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
    * @return The resolved [baseSource] as *MutableMap<String, Any>*
    */
   private fun resolveNestedCategories(baseSource: MutableMap<String, Any>, baseKeyPath: String, keyPaths: List<String>, subKeyPath: String?, subKeyPaths: List<String>?) : MutableList<MutableMap<String, Any>>? {
-    val categories = this.resolveCategories(baseSource, baseKeyPath, keyPaths) as? MutableList<MutableMap<String, Any>>
+    val categories = this.resolveCategories(baseSource, baseKeyPath, keyPaths)
     if (categories != null) {
-      if (subKeyPath != null && subKeyPaths != null) {
-        categories.forEach { category ->
+      return if (subKeyPath != null && subKeyPaths != null) {
+        categories.forEachIndexed { index, category ->
           val items = this.resolveCategories(category, subKeyPath, subKeyPaths)
           if (items != null) {
             IMGLYSetValue(category, subKeyPath, items)
-            val index = categories.indexOfFirst { dict ->
-              dict.keys == category.keys
-            }
             categories[index] = category
           }
         }
-        return categories
+        categories
       } else {
-        return categories
+        categories
       }
     } else {
       return null
@@ -303,11 +322,8 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
   private fun resolveCategories(baseSource: MutableMap<String, Any>, baseKeyPath: String, keyPaths: List<String>) : MutableList<MutableMap<String, Any>>? {
     val categories = IMGLYGetValue(baseSource, baseKeyPath) as? MutableList<MutableMap<String, Any>>
     if (categories != null) {
-      categories.forEach { category ->
+      categories.forEachIndexed { index, category ->
         val resolvedMap = this.resolveNestedAssets(category, keyPaths)
-        val index = categories.indexOfFirst { dict ->
-          dict.keys == category.keys
-        }
         categories[index] = resolvedMap
       }
       return categories
@@ -345,15 +361,15 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
   private fun IMGLYGetValue(map: MutableMap<String, Any>, keyPath: String) : Any? {
     val subBefore = keyPath.substringBefore('.')
     val subAfter = keyPath.substringAfter('.')
-    if(!subAfter.isEmpty() && keyPath.contains(".")){
+    return if(subAfter.isNotEmpty() && keyPath.contains(".")){
       val dic = map[subBefore] as? MutableMap<String, Any>
       if (dic != null) {
-        return IMGLYGetValue(dic, subAfter)
+        IMGLYGetValue(dic, subAfter)
       } else {
-        return null
+        null
       }
     }else{
-      return map[subBefore]
+      map[subBefore]
     }
   }
 
@@ -368,7 +384,7 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
   private fun IMGLYSetValue(map: MutableMap<String, Any>, keyPath: String, value: Any) {
     val subBefore = keyPath.substringBefore('.')
     val subAfter = keyPath.substringAfter('.')
-    if(!subAfter.isEmpty() && keyPath.contains(".")){
+    if(subAfter.isNotEmpty() && keyPath.contains(".")){
       val dic = map[subBefore] as? MutableMap<String, Any>
       if (dic != null) {
         IMGLYSetValue(dic, subAfter, value)

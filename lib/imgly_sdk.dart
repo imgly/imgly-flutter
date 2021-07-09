@@ -2,46 +2,53 @@
 /// video editing tasks.
 class Configuration {
   /// Creates a new [Configuration].
-  Configuration({
-    this.adjustment,
-    this.brush,
-    this.enableZoom,
-    this.export,
-    this.filter,
-    this.focus,
-    this.forceCrop,
-    this.frame,
-    this.mainCanvasActions,
-    this.overlay,
-    this.snapping,
-    this.sticker,
-    this.text,
-    this.textdesign,
-    this.tools,
-    this.transform,
-  });
+  Configuration(
+      {this.adjustment,
+      this.brush,
+      this.enableZoom,
+      this.export,
+      this.filter,
+      this.focus,
+      this.forceCrop,
+      this.frame,
+      this.mainCanvasActions,
+      this.overlay,
+      this.snapping,
+      this.sticker,
+      this.text,
+      this.textdesign,
+      this.tools,
+      this.transform,
+      this.audio,
+      this.composition});
 
   /// Configuration options for `Tool.adjustment`.
-  final AdjustmentOptions adjustment;
+  final AdjustmentOptions? adjustment;
+
+  /// Configuration options for `Tool.audio`.
+  final AudioOptions? audio;
 
   /// Configuration options for `Tool.brush`.
-  final BrushOptions brush;
+  final BrushOptions? brush;
 
   /// Controls if the user can zoom the preview image.
   /// ```
   /// // Defaults to:
   /// true
   /// ```
-  final bool enableZoom;
+  final bool? enableZoom;
+
+  /// Configuration options for `Tool.composition`.
+  final CompositionOptions? composition;
 
   /// Export configuration options.
-  final ExportOptions export;
+  final ExportOptions? export;
 
   /// Configuration options for `Tool.filter`.
-  final FilterOptions filter;
+  final FilterOptions? filter;
 
   /// Configuration options for `Tool.focus`.
-  final FocusOptions focus;
+  final FocusOptions? focus;
 
   /// When set to `true`, the user is forced to crop the asset to one of the
   /// allowed crop ratios in `transform.items` before being able to use other
@@ -57,10 +64,10 @@ class Configuration {
   /// // Defaults to:
   /// false
   /// ```
-  final bool forceCrop;
+  final bool? forceCrop;
 
   /// Configuration options for `Tool.frame`.
-  final FrameOptions frame;
+  final FrameOptions? frame;
 
   /// Defines all allowed actions for the main screen that are displayed as
   /// overlay buttons on the canvas.
@@ -69,61 +76,240 @@ class Configuration {
   /// // Defaults to:
   /// [CanvasAction.undo, CanvasAction.redo]`
   /// ```
-  final List<MainCanvasAction> mainCanvasActions;
+  final List<MainCanvasAction>? mainCanvasActions;
 
   /// Configuration options for `Tool.overlay`.
-  final OverlayOptions overlay;
+  final OverlayOptions? overlay;
 
   /// Global snapping options for all sprites, e.g., stickers, texts,
   /// and text designs.
-  final SnappingOptions snapping;
+  final SnappingOptions? snapping;
 
   /// Configuration options for `Tool.sticker`.
-  final StickerOptions sticker;
+  final StickerOptions? sticker;
 
   /// Configuration options for `Tool.text`.
-  final TextOptions text;
+  final TextOptions? text;
 
   /// Configuration options for `Tool.textDesign`.
-  final TextDesignOptions textdesign;
+  final TextDesignOptions? textdesign;
 
   /// The menu items (or tools) to display in the main menu.
   /// ```
   /// // Defaults to:
+  /// [Tool.composition, Tool.transform, Tool.filter, Tool.adjustment,
+  /// Tool.focus, Tool.sticker, Tool.text, Tool.textDesign, Tool.overlay,
+  /// Tool.frame, Tool.brush]
+  /// // or if your license does not include Tool.composition:
   /// [Tool.trim, Tool.transform, Tool.filter, Tool.adjustment, Tool.focus,
   /// Tool.sticker, Tool.text, Tool.textDesign, Tool.overlay, Tool.frame,
   /// Tool.brush]
   /// ```
-  final List<Tool> tools;
+  final List<Tool>? tools;
 
   /// Configuration options for `Tool.transform`.
-  final TransformOptions transform;
+  final TransformOptions? transform;
 
   /// Converts a [Configuration] to a [Map].
-  Map<String, dynamic> toJson() => {
-        "adjustment": adjustment == null ? null : adjustment._toJson(),
-        "brush": brush == null ? null : brush._toJson(),
-        "enableZoom": enableZoom == null ? null : enableZoom,
-        "export": export == null ? null : export._toJson(),
-        "filter": filter == null ? null : filter._toJson(),
-        "focus": focus == null ? null : focus._toJson(),
-        "forceCrop": forceCrop == null ? null : forceCrop,
-        "frame": frame == null ? null : frame._toJson(),
-        "mainCanvasActions": mainCanvasActions == null
-            ? null
-            : List<dynamic>.from(mainCanvasActions
-                .map((x) => _mainCanvasActionValues.reverse[x])),
-        "overlay": overlay == null ? null : overlay._toJson(),
-        "snapping": snapping == null ? null : snapping._toJson(),
-        "sticker": sticker == null ? null : sticker._toJson(),
-        "text": text == null ? null : text._toJson(),
-        "textdesign": textdesign == null ? null : textdesign._toJson(),
-        "tools": tools == null
-            ? null
-            : List<dynamic>.from(tools.map((x) => _toolValues.reverse[x])),
-        "transform": transform == null ? null : transform._toJson(),
-      }..removeWhere((key, value) => key == null || value == null);
+  Map<String, dynamic> toJson() {
+    final _canvasActions = mainCanvasActions;
+    final _tools = tools;
+
+    return {
+      "adjustment": adjustment?._toJson(),
+      "audio": audio?._toJson(),
+      "brush": brush?._toJson(),
+      "composition": composition?._toJson(),
+      "enableZoom": enableZoom,
+      "export": export?._toJson(),
+      "filter": filter?._toJson(),
+      "focus": focus?._toJson(),
+      "forceCrop": forceCrop,
+      "frame": frame?._toJson(),
+      "mainCanvasActions": _canvasActions == null
+          ? null
+          : List<dynamic>.from(
+              _canvasActions.map((x) => _mainCanvasActionValues.reverse[x])),
+      "overlay": overlay?._toJson(),
+      "snapping": snapping?._toJson(),
+      "sticker": sticker?._toJson(),
+      "text": text?._toJson(),
+      "textdesign": textdesign?._toJson(),
+      "tools": _tools == null
+          ? null
+          : List<dynamic>.from(_tools.map((x) => _toolValues.reverse[x])),
+      "transform": transform?._toJson(),
+    }..removeWhere((key, value) => value == null);
+  }
 }
+
+/// Configuration options for `Tool.composition`.
+class CompositionOptions {
+  /// Creates new [CompositionOptions].
+  CompositionOptions(
+      {this.categories,
+      this.personalVideoClips,
+      this.clipTrimOptions,
+      this.canvasActions});
+
+  /// Defines all available video clips in the video clip library. Each video
+  /// clip must be assigned to a category.
+  ///
+  /// If this array is `null` the defaults are used. If this array is empty the
+  /// video clip library won't be shown when the user taps the add button in
+  /// the composition menu instead the device's media library will be shown
+  /// directly when `personalVideoClips` is enabled.
+  /// If `personalVideoClips` is disabled in this case the add button in the
+  /// composition menu won't be shown at all.
+  /// ```
+  /// // Defaults to:
+  /// []
+  /// ```
+  final List<VideoClipCategory>? categories;
+
+  /// Defines all allowed actions for the composition tool that are displayed
+  /// as overlay buttons on the canvas.
+  /// Only buttons for allowed actions are visible.
+  /// ```
+  /// // Defaults to:
+  /// [CompositionCanvasAction.playPause]
+  /// ```
+  final List<CompositionCanvasAction>? canvasActions;
+
+  /// If enabled the user can add personal video clips from the device's media
+  /// library. A button is added as last item in the composition menu or as
+  /// first item in the video clip library menu in front of the video clip
+  /// categories if any `categories` are defined.
+  /// ```
+  /// // Defaults to:
+  /// true
+  /// ```
+  final bool? personalVideoClips;
+
+  /// Configuration options for trimming individual video clips of the
+  /// video composition.
+  final TrimOptions? clipTrimOptions;
+
+  /// Converts a [CompositionOptions] for JSON parsing.
+  Map<String, dynamic> _toJson() {
+    final _categories = categories;
+    final _canvasActions = canvasActions;
+
+    return {
+      "personalVideoClips": personalVideoClips,
+      "categories": _categories == null
+          ? null
+          : List<dynamic>.from(_categories.map((e) => e._toJson())),
+      "canvasActions": _canvasActions == null
+          ? null
+          : List<dynamic>.from(_canvasActions
+              .map((x) => _compositionCanvasActionValues.reverse[x])),
+      "clipTrim": clipTrimOptions?._toJson()
+    }..removeWhere((key, value) => value == null);
+  }
+}
+
+/// A composition canvas action.
+enum CompositionCanvasAction {
+  /// Play/pause the video playback.
+  playPause
+}
+
+/// The corresponding values to the [CompositionCanvasAction].
+final _compositionCanvasActionValues =
+    _EnumValues({"playpause": CompositionCanvasAction.playPause});
+
+/// Configuration options for `Tool.trim`.
+class TrimOptions {
+  /// Creates new [TrimOptions].
+  TrimOptions({this.canvasActions});
+
+  /// Defines all allowed actions for the trim tool that are displayed as
+  /// overlay buttons on the canvas.
+  /// Only buttons for allowed actions are visible.
+  final List<TrimCanvasAction>? canvasActions;
+
+  /// Converts a [TrimOptions] for JSON parsing.
+  Map<String, dynamic> _toJson() {
+    final _canvasActions = canvasActions;
+
+    return {
+      "canvasActions": _canvasActions == null
+          ? null
+          : List<dynamic>.from(
+              _canvasActions.map((x) => _trimCanvasActionValues.reverse[x]))
+    }..removeWhere((key, value) => value == null);
+  }
+}
+
+/// A trim canvas action.
+enum TrimCanvasAction {
+  /// Delete the video clip.
+  delete,
+
+  /// Play/pause the video playback.
+  playPause
+}
+
+/// The corresponding values to the [TrimCanvasAction].
+final _trimCanvasActionValues = _EnumValues({
+  "delete": TrimCanvasAction.delete,
+  "playpause": TrimCanvasAction.playPause
+});
+
+/// Configuration options for `Tool.audio`.
+class AudioOptions {
+  /// Creates new [AudioOptions].
+  AudioOptions({this.categories, this.canvasActions});
+
+  /// Defines all available audio clips in the audio clip library. Each audio
+  /// clip must be assigned to a category.
+  /// ```
+  /// // Defaults to:
+  /// []
+  /// ```
+  final List<AudioClipCategory>? categories;
+
+  /// Defines all allowed actions for the audio tool that are displayed as
+  /// overlay buttons on the canvas. Only buttons for allowed actions are
+  /// visible.
+  /// ```
+  /// // Defaults to:
+  /// [AudioCanvasAction.delete]
+  /// ```
+  final List<AudioCanvasAction>? canvasActions;
+
+  /// Converts a [AudioOptions] for JSON parsing.
+  Map<String, dynamic> _toJson() {
+    final _canvasActions = canvasActions;
+    final _categories = categories;
+
+    return {
+      "categories": _categories == null
+          ? null
+          : List<dynamic>.from(_categories.map((e) => e._toJson())),
+      "canvasActions": _canvasActions == null
+          ? null
+          : List<dynamic>.from(
+              _canvasActions.map((e) => _audioCanvasActionValues.reverse[e]))
+    }..removeWhere((key, value) => value == null);
+  }
+}
+
+/// An audio canvas action.
+enum AudioCanvasAction {
+  /// Delete the audio clip.
+  delete,
+
+  /// Play/pause the audio playback.
+  playPause
+}
+
+/// The corresponding values to the [AudioCanvasAction].
+final _audioCanvasActionValues = _EnumValues({
+  "delete": AudioCanvasAction.delete,
+  "playpause": AudioCanvasAction.playPause
+});
 
 /// Configuration options for `Tool.adjustment`.
 class AdjustmentOptions {
@@ -144,23 +330,27 @@ class AdjustmentOptions {
   /// AdjustmentTool.blacks, AdjustmentTool.whites,
   /// AdjustmentTool.temperature, AdjustmentTool.sharpness]
   /// ```
-  final List<AdjustmentTool> items;
+  final List<AdjustmentTool>? items;
 
   /// Whether to show a reset button to reset the applied adjustments.
   /// ```
   /// // Defaults to:
   /// true
   /// ```
-  final bool showResetButton;
+  final bool? showResetButton;
 
   /// Converts [AdjustmentOptions] to a [Map].
-  Map<String, dynamic> _toJson() => {
-        "items": items == null
-            ? null
-            : List<dynamic>.from(
-                items.map((x) => _adjustmentToolValues.reverse[x])),
-        "showResetButton": showResetButton == null ? null : showResetButton,
-      }..removeWhere((key, value) => key == null || value == null);
+  Map<String, dynamic> _toJson() {
+    final _items = items;
+
+    return {
+      "items": _items == null
+          ? null
+          : List<dynamic>.from(
+              _items.map((x) => _adjustmentToolValues.reverse[x])),
+      "showResetButton": showResetButton == null ? null : showResetButton,
+    }..removeWhere((key, value) => value == null);
+  }
 }
 
 /// An adjustment tool.
@@ -240,7 +430,7 @@ class BrushOptions {
   /// // Defaults to:
   /// [BrushAction.color, BrushAction.size, BrushAction.hardness]
   /// ```
-  final List<BrushAction> actions;
+  final List<BrushAction>? actions;
 
   /// Defines all allowed actions for the brush tool that are displayed as
   /// overlay buttons on the canvas.
@@ -249,21 +439,21 @@ class BrushOptions {
   /// // Defaults to:
   /// [CanvasAction.delete, CanvasAction.bringToFront,
   /// CanvasAction.undo, CanvasAction.redo]
-  final List<BrushCanvasAction> canvasActions;
+  final List<BrushCanvasAction>? canvasActions;
 
   /// Defines all available colors that can be applied to the brush.
   /// The color pipette is always added.
-  final ColorPalette colors;
+  final ColorPalette? colors;
 
   /// The default color.
-  final Color defaultColor;
+  final Color? defaultColor;
 
   /// The default hardness factor of the brush.
   /// ```
   /// // Defaults to:
   /// 0.5
   /// ```
-  final double defaultHardness;
+  final double? defaultHardness;
 
   /// The default size of the brush. This value is measured in relation to the
   /// smaller side of the image that the user is editing.
@@ -271,14 +461,14 @@ class BrushOptions {
   /// // Defaults to:
   /// 0.05
   /// ```
-  final double defaultSize;
+  final double? defaultSize;
 
   /// The maximum hardness factor a brush can have.
   /// ```
   /// // Defaults to:
   /// 1
   /// ```
-  final double maximumHardness;
+  final double? maximumHardness;
 
   /// The maximum size that a brush can have. This value is
   /// measured in relation to the smaller side of the asset
@@ -287,14 +477,14 @@ class BrushOptions {
   /// // Defaults to:
   /// 0.125
   /// ```
-  final double maximumSize;
+  final double? maximumSize;
 
   /// The minimum hardness factor a brush can have.
   /// ```
   /// // Defaults to:
   /// 0
   /// ```
-  final double minimumHardness;
+  final double? minimumHardness;
 
   /// The minimum size that a brush can have. This value is measured
   /// in relation to the smaller side of the asset that the user is editing.
@@ -304,27 +494,32 @@ class BrushOptions {
   /// // Defaults to:
   /// null
   /// ```
-  final double minimumSize;
+  final double? minimumSize;
 
   /// Converts [BrushOptions] to a [Map].
-  Map<String, dynamic> _toJson() => {
-        "actions": actions == null
-            ? null
-            : List<dynamic>.from(
-                actions.map((x) => _brushActionValues.reverse[x])),
-        "canvasActions": canvasActions == null
-            ? null
-            : List<dynamic>.from(
-                canvasActions.map((x) => _brushCanvasActionValues.reverse[x])),
-        "colors": colors == null ? null : colors._toJson(),
-        "defaultColor": defaultColor == null ? null : defaultColor._toJson(),
-        "defaultHardness": defaultHardness == null ? null : defaultHardness,
-        "defaultSize": defaultSize == null ? null : defaultSize,
-        "maximumHardness": maximumHardness == null ? null : maximumHardness,
-        "maximumSize": maximumSize == null ? null : maximumSize,
-        "minimumHardness": minimumHardness == null ? null : minimumHardness,
-        "minimumSize": minimumSize == null ? null : minimumSize,
-      }..removeWhere((key, value) => key == null || value == null);
+  Map<String, dynamic> _toJson() {
+    final _actions = actions;
+    final _canvasActions = canvasActions;
+
+    return {
+      "actions": _actions == null
+          ? null
+          : List<dynamic>.from(
+              _actions.map((x) => _brushActionValues.reverse[x])),
+      "canvasActions": _canvasActions == null
+          ? null
+          : List<dynamic>.from(
+              _canvasActions.map((x) => _brushCanvasActionValues.reverse[x])),
+      "colors": colors?._toJson(),
+      "defaultColor": defaultColor?._toJson(),
+      "defaultHardness": defaultHardness,
+      "defaultSize": defaultSize,
+      "maximumHardness": maximumHardness,
+      "maximumSize": maximumSize,
+      "minimumHardness": minimumHardness,
+      "minimumSize": minimumSize,
+    }..removeWhere((key, value) => value == null);
+  }
 }
 
 /// A brush action.
@@ -385,7 +580,7 @@ class Color {
   final dynamic color;
 
   /// Converts a [Color] for JSON parsing.
-  dynamic _toJson() => color == null ? null : color;
+  dynamic _toJson() => color;
 }
 
 /// A named color.
@@ -400,16 +595,13 @@ class NamedColor {
   final String name;
 
   /// Converts a [NamedColor] for JSON parsing.
-  Map<String, dynamic> _toJson() => {
-        "color": color == null ? null : color._toJson(),
-        "name": name == null ? null : name
-      }..removeWhere((key, value) => key == null || value == null);
+  Map<String, dynamic> _toJson() => {"color": color._toJson(), "name": name};
 }
 
 /// A color palette of named colors.
 class ColorPalette {
   /// Creates a new [ColorPalette].
-  ColorPalette({this.colors});
+  ColorPalette({required this.colors});
 
   /// The included named colors.
   final List<NamedColor> colors;
@@ -442,27 +634,27 @@ class ExportOptions {
   /// // Defaults to:
   /// null
   /// ```
-  final String filename;
+  final String? filename;
 
   /// Image export configuration if the editor supports image editing.
-  final ImageOptions image;
+  final ImageOptions? image;
 
   /// Export configuration of the serialized image and video editing
   /// operations that were applied to the input media loaded into the editor.
   /// This also allows to recover these operations the next
   /// time the editor is opened again.
-  final SerializationOptions serialization;
+  final SerializationOptions? serialization;
 
   /// Video export configuration if the editor supports video editing.
-  final VideoOptions video;
+  final VideoOptions? video;
 
   /// Converts [ExportOptions] for JSON parsing.
   Map<String, dynamic> _toJson() => {
-        "filename": filename == null ? null : filename,
-        "image": image == null ? null : image._toJson(),
-        "serialization": serialization == null ? null : serialization._toJson(),
-        "video": video == null ? null : video._toJson(),
-      }..removeWhere((key, value) => key == null || value == null);
+        "filename": filename,
+        "image": image?._toJson(),
+        "serialization": serialization?._toJson(),
+        "video": video?._toJson(),
+      }..removeWhere((key, value) => value == null);
 }
 
 /// Image export configuration if the editor supports image editing.
@@ -479,14 +671,14 @@ class ImageOptions {
   /// // Defaults to:
   /// ImageExportType.fileUrl
   /// ```
-  final ImageExportType exportType;
+  final ImageExportType? exportType;
 
   /// The image file format of the generated high resolution image.
   /// ```
   /// // Defaults to:
   /// ImageFormat.jpeg
   /// ```
-  final ImageFormat format;
+  final ImageFormat? format;
 
   /// The compression quality to use when creating the output
   /// image with a lossy file format.
@@ -494,7 +686,7 @@ class ImageOptions {
   /// // Defaults to:
   /// 0.9
   /// ```
-  final double quality;
+  final double? quality;
 
   /// Converts [ImageOptions] for JSON parsing.
   Map<String, dynamic> _toJson() => {
@@ -502,8 +694,8 @@ class ImageOptions {
             ? null
             : _imageExportTypeValues.reverse[exportType],
         "format": format == null ? null : _imageFormatValues.reverse[format],
-        "quality": quality == null ? null : quality,
-      }..removeWhere((key, value) => key == null || value == null);
+        "quality": quality,
+      }..removeWhere((key, value) => value == null);
 }
 
 /// An image export type.
@@ -563,17 +755,17 @@ class SerializationOptions {
   /// // Defaults to:
   /// false
   /// ```
-  final bool embedSourceImage;
+  final bool? embedSourceImage;
 
   /// Whether the serialization of the editing operations should be exported.
-  final bool enabled;
+  final bool? enabled;
 
   /// The serialization export type.
   /// ```
   /// // Defaults to:
   /// SerializationExportType.fileUrl
   /// ```
-  final SerializationExportType exportType;
+  final SerializationExportType? exportType;
 
   /// The filename for the exported serialization data if the `exportType` is
   /// `SerializationExportType.fileUrl`.
@@ -588,17 +780,17 @@ class SerializationOptions {
   /// // Defaults to:
   /// null
   /// ```
-  final String filename;
+  final String? filename;
 
   /// Converts [SerializationOptions] for JSON parsing.
   Map<String, dynamic> _toJson() => {
-        "embedSourceImage": embedSourceImage == null ? null : embedSourceImage,
-        "enabled": enabled == null ? null : enabled,
+        "embedSourceImage": embedSourceImage,
+        "enabled": enabled,
         "exportType": exportType == null
             ? null
             : _serializationExportTypeValues.reverse[exportType],
-        "filename": filename == null ? null : filename,
-      }..removeWhere((key, value) => key == null || value == null);
+        "filename": filename,
+      }..removeWhere((key, value) => value == null);
 }
 
 /// A serialization export type.
@@ -632,36 +824,36 @@ class VideoOptions {
   /// // Defaults to:
   /// null
   /// ```
-  final double bitRate;
+  final double? bitRate;
 
   /// The video codec to use for the exported video.
   /// ```
   /// // Defaults to:
   /// VideoCodec.h264
   /// ```
-  final VideoCodec codec;
+  final VideoCodec? codec;
 
   /// The video container format to export.
   /// ```
   /// // Defaults to:
   /// VideoFormat.mp4
   /// ```
-  final VideoFormat format;
+  final VideoFormat? format;
 
   /// The compression quality to use when exporting to VideoCodec.hevc.
   /// ```
   /// // Defaults to:
   /// 0.9
   /// ```
-  final double quality;
+  final double? quality;
 
   /// Converts [VideoOptions] for JSON parsing.
   Map<String, dynamic> _toJson() => {
-        "bitRate": bitRate == null ? null : bitRate,
+        "bitRate": bitRate,
         "codec": codec == null ? null : _videoCodecValues.reverse[codec],
         "format": format == null ? null : _videoFormatValues.reverse[format],
-        "quality": quality == null ? null : quality,
-      }..removeWhere((key, value) => key == null || value == null);
+        "quality": quality,
+      }..removeWhere((key, value) => value == null);
 }
 
 /// A video codec.
@@ -704,102 +896,96 @@ class FilterOptions {
   /// ```
   /// // Defaults to:
   /// final categories = <FilterCategory>[
-  ///  FilterCategory.existing(
-  ///      identifier: "imgly_filter_category_duotone",
+  ///  FilterCategory.existing("imgly_filter_category_duotone",
   ///      items: [
-  ///        Filter.existing(identifier: "imgly_duotone_desert"),
-  ///        Filter.existing(identifier: "imgly_duotone_peach"),
-  ///        Filter.existing(identifier: "imgly_duotone_clash"),
-  ///        Filter.existing(identifier: "imgly_duotone_plum"),
-  ///        Filter.existing(identifier: "imgly_duotone_breezy"),
-  ///        Filter.existing(identifier: "imgly_duotone_deepblue"),
-  ///        Filter.existing(identifier: "imgly_duotone_frog"),
-  ///        Filter.existing(identifier: "imgly_duotone_sunset"),
+  ///        Filter.existing("imgly_duotone_desert"),
+  ///        Filter.existing("imgly_duotone_peach"),
+  ///        Filter.existing("imgly_duotone_clash"),
+  ///        Filter.existing("imgly_duotone_plum"),
+  ///        Filter.existing("imgly_duotone_breezy"),
+  ///        Filter.existing("imgly_duotone_deepblue"),
+  ///        Filter.existing("imgly_duotone_frog"),
+  ///        Filter.existing("imgly_duotone_sunset"),
   ///      ]),
-  ///  FilterCategory.existing(identifier: "imgly_filter_category_bw", items: [
-  ///    Filter.existing(identifier: "imgly_lut_ad1920"),
-  ///    Filter.existing(identifier: "imgly_lut_bw"),
-  ///    Filter.existing(identifier: "imgly_lut_x400"),
-  ///    Filter.existing(identifier: "imgly_lut_litho"),
-  ///    Filter.existing(identifier: "imgly_lut_sepiahigh"),
-  ///    Filter.existing(identifier: "imgly_lut_plate"),
-  ///    Filter.existing(identifier: "imgly_lut_sin"),
+  ///  FilterCategory.existing("imgly_filter_category_bw", items: [
+  ///    Filter.existing("imgly_lut_ad1920"),
+  ///    Filter.existing("imgly_lut_bw"),
+  ///    Filter.existing("imgly_lut_x400"),
+  ///    Filter.existing("imgly_lut_litho"),
+  ///    Filter.existing("imgly_lut_sepiahigh"),
+  ///    Filter.existing("imgly_lut_plate"),
+  ///    Filter.existing("imgly_lut_sin"),
   ///  ]),
-  ///  FilterCategory.existing(
-  ///      identifier: "imgly_filter_category_vintage",
+  ///  FilterCategory.existing("imgly_filter_category_vintage",
   ///      items: [
-  ///        Filter.existing(identifier: "imgly_lut_blues"),
-  ///        Filter.existing(identifier: "imgly_lut_front"),
-  ///        Filter.existing(identifier: "imgly_lut_texas"),
-  ///        Filter.existing(identifier: "imgly_lut_celsius"),
-  ///        Filter.existing(identifier: "imgly_lut_cool"),
+  ///        Filter.existing("imgly_lut_blues"),
+  ///        Filter.existing("imgly_lut_front"),
+  ///        Filter.existing("imgly_lut_texas"),
+  ///        Filter.existing("imgly_lut_celsius"),
+  ///        Filter.existing("imgly_lut_cool"),
   ///      ]),
-  ///  FilterCategory.existing(
-  ///      identifier: "imgly_filter_category_smooth",
+  ///  FilterCategory.existing("imgly_filter_category_smooth",
   ///      items: [
-  ///       Filter.existing(identifier: "imgly_lut_chest"),
-  ///        Filter.existing(identifier: "imgly_lut_winter"),
-  ///        Filter.existing(identifier: "imgly_lut_kdynamic"),
-  ///        Filter.existing(identifier: "imgly_lut_fall"),
-  ///        Filter.existing(identifier: "imgly_lut_lenin"),
-  ///        Filter.existing(identifier: "imgly_lut_pola669"),
+  ///       Filter.existing("imgly_lut_chest"),
+  ///        Filter.existing("imgly_lut_winter"),
+  ///        Filter.existing("imgly_lut_kdynamic"),
+  ///        Filter.existing("imgly_lut_fall"),
+  ///        Filter.existing("imgly_lut_lenin"),
+  ///        Filter.existing("imgly_lut_pola669"),
   ///      ]),
-  // ignore: lines_longer_than_80_chars
-  ///  FilterCategory.existing(identifier: "imgly_filter_category_cold", items: [
-  ///    Filter.existing(identifier: "imgly_lut_elder"),
-  ///    Filter.existing(identifier: "imgly_lut_orchid"),
-  ///    Filter.existing(identifier: "imgly_lut_bleached"),
-  ///    Filter.existing(identifier: "imgly_lut_bleachedblue"),
-  ///    Filter.existing(identifier: "imgly_lut_breeze"),
-  ///    Filter.existing(identifier: "imgly_lut_blueshadows"),
+  ///  FilterCategory.existing("imgly_filter_category_cold", items: [
+  ///    Filter.existing("imgly_lut_elder"),
+  ///    Filter.existing("imgly_lut_orchid"),
+  ///    Filter.existing("imgly_lut_bleached"),
+  ///    Filter.existing("imgly_lut_bleachedblue"),
+  ///    Filter.existing("imgly_lut_breeze"),
+  ///    Filter.existing("imgly_lut_blueshadows"),
   ///  ]),
-  // ignore: lines_longer_than_80_chars
-  ///  FilterCategory.existing(identifier: "imgly_filter_category_warm", items: [
-  ///    Filter.existing(identifier: "imgly_lut_sunset"),
-  ///    Filter.existing(identifier: "imgly_lut_eighties"),
-  ///    Filter.existing(identifier: "imgly_lut_evening"),
-  ///    Filter.existing(identifier: "imgly_lut_k2"),
-  ///    Filter.existing(identifier: "imgly_lut_nogreen"),
+  ///  FilterCategory.existing("imgly_filter_category_warm", items: [
+  ///    Filter.existing("imgly_lut_sunset"),
+  ///    Filter.existing("imgly_lut_eighties"),
+  ///    Filter.existing("imgly_lut_evening"),
+  ///    Filter.existing("imgly_lut_k2"),
+  ///    Filter.existing("imgly_lut_nogreen"),
   ///  ]),
-  ///  FilterCategory.existing(
-  ///      identifier: "imgly_filter_category_legacy",
+  ///  FilterCategory.existing("imgly_filter_category_legacy",
   ///      items: [
-  ///        Filter.existing(identifier: "imgly_lut_ancient"),
-  ///        Filter.existing(identifier: "imgly_lut_cottoncandy"),
-  ///        Filter.existing(identifier: "imgly_lut_classic"),
-  ///        Filter.existing(identifier: "imgly_lut_colorful"),
-  ///        Filter.existing(identifier: "imgly_lut_creamy"),
-  ///        Filter.existing(identifier: "imgly_lut_fixie"),
-  ///        Filter.existing(identifier: "imgly_lut_food"),
-  ///        Filter.existing(identifier: "imgly_lut_fridge"),
-  ///        Filter.existing(identifier: "imgly_lut_glam"),
-  ///        Filter.existing(identifier: "imgly_lut_gobblin"),
-  ///        Filter.existing(identifier: "imgly_lut_highcontrast"),
-  ///        Filter.existing(identifier: "imgly_lut_highcarb"),
-  ///        Filter.existing(identifier: "imgly_lut_k1"),
-  ///        Filter.existing(identifier: "imgly_lut_k6"),
-  ///        Filter.existing(identifier: "imgly_lut_keen"),
-  ///        Filter.existing(identifier: "imgly_lut_lomo"),
-  ///        Filter.existing(identifier: "imgly_lut_lomo100"),
-  ///        Filter.existing(identifier: "imgly_lut_lucid"),
-  ///        Filter.existing(identifier: "imgly_lut_mellow"),
-  ///        Filter.existing(identifier: "imgly_lut_neat"),
-  ///        Filter.existing(identifier: "imgly_lut_pale"),
-  ///        Filter.existing(identifier: "imgly_lut_pitched"),
-  ///        Filter.existing(identifier: "imgly_lut_polasx"),
-  ///        Filter.existing(identifier: "imgly_lut_pro400"),
-  ///        Filter.existing(identifier: "imgly_lut_quozi"),
-  ///        Filter.existing(identifier: "imgly_lut_settled"),
-  ///        Filter.existing(identifier: "imgly_lut_seventies"),
-  ///        Filter.existing(identifier: "imgly_lut_soft"),
-  ///        Filter.existing(identifier: "imgly_lut_steel"),
-  ///        Filter.existing(identifier: "imgly_lut_summer"),
-  ///        Filter.existing(identifier: "imgly_lut_tender"),
-  ///        Filter.existing(identifier: "imgly_lut_twilight"),
+  ///        Filter.existing("imgly_lut_ancient"),
+  ///        Filter.existing("imgly_lut_cottoncandy"),
+  ///        Filter.existing("imgly_lut_classic"),
+  ///        Filter.existing("imgly_lut_colorful"),
+  ///        Filter.existing("imgly_lut_creamy"),
+  ///        Filter.existing("imgly_lut_fixie"),
+  ///        Filter.existing("imgly_lut_food"),
+  ///        Filter.existing("imgly_lut_fridge"),
+  ///        Filter.existing("imgly_lut_glam"),
+  ///        Filter.existing("imgly_lut_gobblin"),
+  ///        Filter.existing("imgly_lut_highcontrast"),
+  ///        Filter.existing("imgly_lut_highcarb"),
+  ///        Filter.existing("imgly_lut_k1"),
+  ///        Filter.existing("imgly_lut_k6"),
+  ///        Filter.existing("imgly_lut_keen"),
+  ///        Filter.existing("imgly_lut_lomo"),
+  ///        Filter.existing("imgly_lut_lomo100"),
+  ///        Filter.existing("imgly_lut_lucid"),
+  ///        Filter.existing("imgly_lut_mellow"),
+  ///        Filter.existing("imgly_lut_neat"),
+  ///        Filter.existing("imgly_lut_pale"),
+  ///        Filter.existing("imgly_lut_pitched"),
+  ///        Filter.existing("imgly_lut_polasx"),
+  ///        Filter.existing("imgly_lut_pro400"),
+  ///        Filter.existing("imgly_lut_quozi"),
+  ///        Filter.existing("imgly_lut_settled"),
+  ///        Filter.existing("imgly_lut_seventies"),
+  ///        Filter.existing("imgly_lut_soft"),
+  ///        Filter.existing("imgly_lut_steel"),
+  ///        Filter.existing("imgly_lut_summer"),
+  ///        Filter.existing("imgly_lut_tender"),
+  ///        Filter.existing("imgly_lut_twilight"),
   ///     ])
   /// ];
   /// ```
-  final List<FilterCategory> categories;
+  final List<FilterCategory>? categories;
 
   /// Whether categories should be flattened which effectively hides
   /// the categories. If this is enabled all filters will be shown in
@@ -809,16 +995,19 @@ class FilterOptions {
   /// // Defaults to:
   /// false
   /// ```
-  final bool flattenCategories;
+  final bool? flattenCategories;
 
   /// Converts [FilterOptions] for JSON parsing.
-  Map<String, dynamic> _toJson() => {
-        "categories": categories == null
-            ? null
-            : List<dynamic>.from(categories.map((x) => x._toJson())),
-        "flattenCategories":
-            flattenCategories == null ? null : flattenCategories,
-      }..removeWhere((key, value) => key == null || value == null);
+  Map<String, dynamic> _toJson() {
+    final _categories = categories;
+
+    return {
+      "categories": _categories == null
+          ? null
+          : List<dynamic>.from(_categories.map((x) => x._toJson())),
+      "flattenCategories": flattenCategories,
+    }..removeWhere((key, value) => value == null);
+  }
 }
 
 /// Configuration options for `Tool.focus`.
@@ -836,14 +1025,18 @@ class FocusOptions {
   /// [FocusTool.none, FocusTool.radial, FocusTool.mirrored,
   /// FocusTool.linear, FocusTool.gaussian]
   /// ```
-  final List<FocusTool> items;
+  final List<FocusTool>? items;
 
   /// Converts [FocusOptions] for JSON parsing.
-  Map<String, dynamic> _toJson() => {
-        "items": items == null
-            ? null
-            : List<dynamic>.from(items.map((x) => _focusToolValues.reverse[x])),
-      }..removeWhere((key, value) => key == null || value == null);
+  Map<String, dynamic> _toJson() {
+    final _items = items;
+
+    return {
+      "items": _items == null
+          ? null
+          : List<dynamic>.from(_items.map((x) => _focusToolValues.reverse[x])),
+    }..removeWhere((key, value) => value == null);
+  }
 }
 
 /// A blur tool.
@@ -887,7 +1080,7 @@ class FrameOptions {
   /// // Defaults to:
   /// [FrameAction.replace, FrameAction.width, FrameAction.opacity]
   /// ```
-  final List<FrameAction> actions;
+  final List<FrameAction>? actions;
 
   /// Defines all available frames.
   /// New items can be mixed and matched with existing ones.
@@ -895,24 +1088,29 @@ class FrameOptions {
   /// ```
   /// // Defaults to:
   /// final items = [
-  ///   Frame.existing(identifier: "imgly_frame_dia"),
-  ///   Frame.existing(identifier: "imgly_frame_art_decor"),
-  ///   Frame.existing(identifier: "imgly_frame_black_passepartout"),
-  ///   Frame.existing(identifier: "imgly_frame_wood_passepartout"),
+  ///   Frame.existing("imgly_frame_dia"),
+  ///   Frame.existing("imgly_frame_art_decor"),
+  ///   Frame.existing("imgly_frame_black_passepartout"),
+  ///   Frame.existing("imgly_frame_wood_passepartout"),
   /// ];
   /// ```
-  final List<Frame> items;
+  final List<Frame>? items;
 
   /// Converts [FrameOptions] for JSON parsing.
-  Map<String, dynamic> _toJson() => {
-        "actions": actions == null
-            ? null
-            : List<dynamic>.from(
-                actions.map((x) => _frameActionValues.reverse[x])),
-        "items": items == null
-            ? null
-            : List<dynamic>.from(items.map((x) => x._toJson())),
-      }..removeWhere((key, value) => key == null || value == null);
+  Map<String, dynamic> _toJson() {
+    final _actions = actions;
+    final _items = items;
+
+    return {
+      "actions": _actions == null
+          ? null
+          : List<dynamic>.from(
+              _actions.map((x) => _frameActionValues.reverse[x])),
+      "items": _items == null
+          ? null
+          : List<dynamic>.from(_items.map((x) => x._toJson())),
+    }..removeWhere((key, value) => value == null);
+  }
 }
 
 /// A frame action.
@@ -935,19 +1133,44 @@ final _frameActionValues = _EnumValues({
 });
 
 /// A frame.
-class Frame extends _NamedItem {
-  /// Creates a new [Frame].
-  Frame(
+abstract class Frame extends _NamedItem {
+  /// Retrieves an existing frame with the given [identifier].
+  Frame._existing(String identifier) : super.existing(identifier);
+
+  /// Creates a new named [Frame].
+  Frame._custom(String identifier, String name) : super(identifier, name);
+
+  /// Retrieves an [ExistingFrame] with the given [identifier].
+  factory Frame.existing(String identifier) => ExistingFrame(identifier);
+
+  /// Creates a new [CustomFrame].
+  factory Frame(String identifier, String name, ImageGroupSet imageGroups,
+          double relativeScale, String thumbnailUri,
+          {FrameLayoutMode? layoutMode}) =>
+      CustomFrame(identifier, name, imageGroups, relativeScale, thumbnailUri,
+          layoutMode: layoutMode);
+
+  /// Converts the [Frame] for JSON parsing.
+  Map<String, dynamic> _toJson() => {"identifier": identifier};
+}
+
+/// An existing frame.
+class ExistingFrame extends Frame {
+  /// Retrieves an existing frame with the given [identifier].
+  ExistingFrame(String identifier) : super._existing(identifier);
+}
+
+/// A custom frame.
+class CustomFrame extends Frame {
+  /// Creates a new [CustomFrame].
+  CustomFrame(
     String identifier,
     String name,
     this.imageGroups,
     this.relativeScale,
     this.thumbnailUri, {
     this.layoutMode,
-  }) : super(identifier, name);
-
-  /// Retrieves an existing [Frame] with the given [identifier].
-  Frame.existing(String identifier) : this(identifier, null, null, null, null);
+  }) : super._custom(identifier, name);
 
   /// Images for the 12-patch layout of a dynamic frame
   /// that automatically adapts to
@@ -959,9 +1182,9 @@ class Frame extends _NamedItem {
   /// // Defaults to:
   /// FrameLayoutMode.horizontalInside
   /// ```
-  final FrameLayoutMode layoutMode;
+  final FrameLayoutMode? layoutMode;
 
-  /// The relative scale of the frame which is defined in relatation
+  /// The relative scale of the frame which is defined in relation
   /// to the shorter side of the resulting output image.
   final double relativeScale;
 
@@ -971,16 +1194,17 @@ class Frame extends _NamedItem {
   /// your `pubspec.yaml` file.
   final String thumbnailUri;
 
+  @override
   Map<String, dynamic> _toJson() => {
-        "identifier": identifier == null ? null : identifier,
-        "imageGroups": imageGroups == null ? null : imageGroups._toJson(),
+        "identifier": identifier,
+        "imageGroups": imageGroups._toJson(),
         "layoutMode": layoutMode == null
             ? null
             : _frameLayoutModeValues.reverse[layoutMode],
-        "name": name == null ? null : name,
-        "relativeScale": relativeScale == null ? null : relativeScale,
-        "thumbnailURI": thumbnailUri == null ? null : thumbnailUri,
-      }..removeWhere((key, value) => key == null || value == null);
+        "name": name,
+        "relativeScale": relativeScale,
+        "thumbnailURI": thumbnailUri,
+      }..removeWhere((key, value) => value == null);
 }
 
 /// Images for the 12-patch layout of a dynamic frame that automatically
@@ -1000,7 +1224,7 @@ class ImageGroupSet {
   /// // Defaults to:
   /// null
   /// ```
-  final FrameImageGroup bottom;
+  final FrameImageGroup? bottom;
 
   /// The left image group.
   /// If `null` there is no top group.
@@ -1008,7 +1232,7 @@ class ImageGroupSet {
   /// // Defaults to:
   /// null
   /// ```
-  final FrameImageGroup left;
+  final FrameImageGroup? left;
 
   /// The right image group.
   /// If `null` there is no top group.
@@ -1016,7 +1240,7 @@ class ImageGroupSet {
   /// // Defaults to:
   /// null
   /// ```
-  final FrameImageGroup right;
+  final FrameImageGroup? right;
 
   /// The top image group.
   /// If `null` there is no top group.
@@ -1024,15 +1248,15 @@ class ImageGroupSet {
   /// // Defaults to:
   /// null
   /// ```
-  final FrameImageGroup top;
+  final FrameImageGroup? top;
 
   /// Converts an [ImageGroupSet] for JSON parsing.
   Map<String, dynamic> _toJson() => {
-        "bottom": bottom == null ? null : bottom._toJson(),
-        "left": left == null ? null : left._toJson(),
-        "right": right == null ? null : right._toJson(),
-        "top": top == null ? null : top._toJson(),
-      }..removeWhere((key, value) => key == null || value == null);
+        "bottom": bottom?._toJson(),
+        "left": left?._toJson(),
+        "right": right?._toJson(),
+        "top": top?._toJson(),
+      }..removeWhere((key, value) => value == null);
 }
 
 /// An image group for the 12-patch layout of a dynamic frame.
@@ -1054,14 +1278,14 @@ class FrameImageGroup {
   /// // Defaults to:
   /// null
   /// ```
-  final String endUri;
+  final String? endUri;
 
   /// The render mode for the middle image.
   /// ```
   /// // Defaults to:
   /// FrameTileMode.repeat
   /// ```
-  final FrameTileMode midMode;
+  final FrameTileMode? midMode;
 
   /// The source for the mid image.
   /// This should either be the full path, a uri or if
@@ -1083,16 +1307,16 @@ class FrameImageGroup {
   /// // Defaults to:
   /// null
   /// ```
-  final String startUri;
+  final String? startUri;
 
   /// Converts a [FrameImageGroup] for JSON parsing.
   Map<String, dynamic> _toJson() => {
-        "endURI": endUri == null ? null : endUri,
+        "endURI": endUri,
         "midMode":
             midMode == null ? null : _frameTileModeValues.reverse[midMode],
-        "midURI": midUri == null ? null : midUri,
-        "startURI": startUri == null ? null : startUri,
-      }..removeWhere((key, value) => key == null || value == null);
+        "midURI": midUri,
+        "startURI": startUri,
+      }..removeWhere((key, value) => value == null);
 }
 
 /// A frame tile mode.
@@ -1129,6 +1353,12 @@ final _frameLayoutModeValues = _EnumValues({
 
 /// A main canvas action.
 enum MainCanvasAction {
+  /// (Un)mute the video playback.
+  soundOnOff,
+
+  /// Play/pause the video playback.
+  playPause,
+
   /// Redo the action(s).
   redo,
 
@@ -1137,8 +1367,12 @@ enum MainCanvasAction {
 }
 
 /// The corresponding values to the [MainCanvasAction].
-final _mainCanvasActionValues =
-    _EnumValues({"redo": MainCanvasAction.redo, "undo": MainCanvasAction.undo});
+final _mainCanvasActionValues = _EnumValues({
+  "redo": MainCanvasAction.redo,
+  "undo": MainCanvasAction.undo,
+  "playpause": MainCanvasAction.playPause,
+  "soundonoff": MainCanvasAction.soundOnOff
+});
 
 /// Configuration options for `Tool.overlay`.
 class OverlayOptions {
@@ -1155,7 +1389,7 @@ class OverlayOptions {
   /// BlendMode.screen, BlendMode.lighten, BlendMode.softLight,
   /// BlendMode.hardLight, BlendMode.darken, BlendMode.colorBurn]
   /// ```
-  final List<BlendMode> blendModes;
+  final List<BlendMode>? blendModes;
 
   /// Defines all available overlays.
   /// New items can be mixed and matched with existing ones.
@@ -1163,26 +1397,31 @@ class OverlayOptions {
   /// ```
   /// // Defaults to:
   /// final items = [
-  ///   Overlay.existing(identifier: "imgly_overlay_golden"),
-  ///   Overlay.existing(identifier: "imgly_overlay_lightleak1"),
-  ///   Overlay.existing(identifier: "imgly_overlay_rain"),
-  ///   Overlay.existing(identifier: "imgly_overlay_mosaic"),
-  ///   Overlay.existing(identifier: "imgly_overlay_vintage"),
-  ///   Overlay.existing(identifier: "imgly_overlay_paper"),
+  ///   Overlay.existing("imgly_overlay_golden"),
+  ///   Overlay.existing("imgly_overlay_lightleak1"),
+  ///   Overlay.existing("imgly_overlay_rain"),
+  ///   Overlay.existing("imgly_overlay_mosaic"),
+  ///   Overlay.existing("imgly_overlay_vintage"),
+  ///   Overlay.existing("imgly_overlay_paper"),
   /// ];
   /// ```
-  final List<Overlay> items;
+  final List<Overlay>? items;
 
   /// Converts [OverlayOptions] for JSON parsing.
-  Map<String, dynamic> _toJson() => {
-        "blendModes": blendModes == null
-            ? null
-            : List<dynamic>.from(
-                blendModes.map((x) => _blendModeValues.reverse[x])),
-        "items": items == null
-            ? null
-            : List<dynamic>.from(items.map((x) => x._toJson())),
-      }..removeWhere((key, value) => key == null || value == null);
+  Map<String, dynamic> _toJson() {
+    final _blendModes = blendModes;
+    final _items = items;
+
+    return {
+      "blendModes": _blendModes == null
+          ? null
+          : List<dynamic>.from(
+              _blendModes.map((x) => _blendModeValues.reverse[x])),
+      "items": _items == null
+          ? null
+          : List<dynamic>.from(_items.map((x) => x._toJson())),
+    }..removeWhere((key, value) => value == null);
+  }
 }
 
 /// A blend mode.
@@ -1229,19 +1468,42 @@ final _blendModeValues = _EnumValues({
 });
 
 /// An overlay.
-class Overlay extends _NamedItem {
-  /// Creates a new [Overlay].
-  Overlay(
+abstract class Overlay extends _NamedItem {
+  /// Retrieves an existing overlay with the given [identifier].
+  Overlay._existing(String identifier) : super.existing(identifier);
+
+  /// Creates a new named [Overlay].
+  Overlay._custom(String identifier, String name) : super(identifier, name);
+
+  /// Retrieves an [ExistingOverlay] with the given [identifier].
+  factory Overlay.existing(String identifier) => ExistingOverlay(identifier);
+
+  /// Creates a new [CustomOverlay].
+  factory Overlay(String identifier, String name, BlendMode defaultBlendMode,
+          String overlayUri, {String? thumbnailUri}) =>
+      CustomOverlay(identifier, name, defaultBlendMode, overlayUri,
+          thumbnailUri: thumbnailUri);
+
+  /// Converts the [Overlay] for JSON parsing.
+  Map<String, dynamic> _toJson() => {"identifier": identifier};
+}
+
+/// An existing overlay.
+class ExistingOverlay extends Overlay {
+  /// Retrieves an existing overlay with the given [identifier].
+  ExistingOverlay(String identifier) : super._existing(identifier);
+}
+
+/// A custom overlay.
+class CustomOverlay extends Overlay {
+  /// Creates a new [CustomOverlay].
+  CustomOverlay(
     String identifier,
     String name,
     this.defaultBlendMode,
     this.overlayUri, {
     this.thumbnailUri,
-  }) : super(identifier, name);
-
-  /// Retrieves an existing [Overlay] with the given [identifier].
-  Overlay.existing(String identifier)
-      : this(identifier, null, null, null, thumbnailUri: null);
+  }) : super._custom(identifier, name);
 
   /// The default blend mode that is used to apply the overlay.
   final BlendMode defaultBlendMode;
@@ -1262,18 +1524,17 @@ class Overlay extends _NamedItem {
   /// // Defaults to:
   /// null
   /// ```
-  final String thumbnailUri;
+  final String? thumbnailUri;
 
   /// Converts an [Overlay] for JSON parsing.
+  @override
   Map<String, dynamic> _toJson() => {
-        "identifier": identifier == null ? null : identifier,
-        "defaultBlendMode": defaultBlendMode == null
-            ? null
-            : _blendModeValues.reverse[defaultBlendMode],
-        "name": name == null ? null : name,
-        "overlayURI": overlayUri == null ? null : overlayUri,
-        "thumbnailURI": thumbnailUri == null ? null : thumbnailUri,
-      }..removeWhere((key, value) => key == null || value == null);
+        "identifier": identifier,
+        "defaultBlendMode": _blendModeValues.reverse[defaultBlendMode],
+        "name": name,
+        "overlayURI": overlayUri,
+        "thumbnailURI": thumbnailUri,
+      }..removeWhere((key, value) => value == null);
 }
 
 /// Global snapping options for all sprites, e.g., stickers, texts,
@@ -1286,16 +1547,16 @@ class SnappingOptions {
   });
 
   /// Snapping options for positioning sprites.
-  final PositionSnappingOptions position;
+  final PositionSnappingOptions? position;
 
   /// Snapping options for rotating sprites.
-  final RotationSnappingOptions rotation;
+  final RotationSnappingOptions? rotation;
 
   /// Converts [SnappingOptions] for JSON parsing.
   Map<String, dynamic> _toJson() => {
-        "position": position == null ? null : position._toJson(),
-        "rotation": rotation == null ? null : rotation._toJson(),
-      }..removeWhere((key, value) => key == null || value == null);
+        "position": position?._toJson(),
+        "rotation": rotation?._toJson(),
+      }..removeWhere((key, value) => value == null);
 }
 
 /// Snapping options for positioning sprites.
@@ -1318,7 +1579,7 @@ class PositionSnappingOptions {
   /// // Defaults to:
   /// true
   /// ```
-  final bool enabled;
+  final bool? enabled;
 
   /// The bottom side of a sprite's bounding box snaps to a horizontal line
   /// which is shifted from the bottom side of the edited image towards its
@@ -1329,7 +1590,7 @@ class PositionSnappingOptions {
   /// // Defaults to:
   /// 0.1
   /// ```
-  final double snapToBottom;
+  final double? snapToBottom;
 
   /// If enabled a sprite's center snaps to the horizontal line through the
   /// center of the edited image.
@@ -1337,7 +1598,7 @@ class PositionSnappingOptions {
   /// // Defaults to:
   /// true
   /// ```
-  final bool snapToHorizontalCenter;
+  final bool? snapToHorizontalCenter;
 
   /// The bottom side of a sprite's bounding box snaps to a horizontal line
   /// which is shifted from the left side of the edited image towards its
@@ -1348,7 +1609,7 @@ class PositionSnappingOptions {
   /// // Defaults to:
   /// 0.1
   /// ```
-  final double snapToLeft;
+  final double? snapToLeft;
 
   /// The bottom side of a sprite's bounding box snaps to a horizontal
   /// line which is shifted from the right side of the edited image towards
@@ -1359,7 +1620,7 @@ class PositionSnappingOptions {
   /// // Defaults to:
   /// 0.1
   /// ```
-  final double snapToRight;
+  final double? snapToRight;
 
   /// The bottom side of a sprite's bounding box snaps to a horizontal line
   /// which is shifted from the right side of the edited image towards its
@@ -1370,7 +1631,7 @@ class PositionSnappingOptions {
   /// // Defaults to:
   /// 0.1
   /// ```
-  final double snapToTop;
+  final double? snapToTop;
 
   /// If enabled a sprite's center snaps to the vertical line through the
   /// center of the edited image.
@@ -1378,7 +1639,7 @@ class PositionSnappingOptions {
   /// // Defaults to:
   /// true
   /// ```
-  final bool snapToVerticalCenter;
+  final bool? snapToVerticalCenter;
 
   /// This threshold defines the distance of a pan gesture where snapping
   /// at a snap point occurs. It is measured in points.
@@ -1386,7 +1647,7 @@ class PositionSnappingOptions {
   /// // Defaults to:
   /// 20
   /// ```
-  final double threshold;
+  final double? threshold;
 
   /// The keys that can explicitly be set to null.
   static const List<String> nullSupported = [
@@ -1398,18 +1659,16 @@ class PositionSnappingOptions {
 
   /// Converts [PositionSnappingOptions] for JSON parsing.
   Map<String, dynamic> _toJson() => {
-        "enabled": enabled == null ? null : enabled,
-        "snapToBottom": snapToBottom == null ? null : snapToBottom,
-        "snapToHorizontalCenter":
-            snapToHorizontalCenter == null ? null : snapToHorizontalCenter,
-        "snapToLeft": snapToLeft == null ? null : snapToLeft,
-        "snapToRight": snapToRight == null ? null : snapToRight,
-        "snapToTop": snapToTop == null ? null : snapToTop,
-        "snapToVerticalCenter":
-            snapToVerticalCenter == null ? null : snapToVerticalCenter,
-        "threshold": threshold == null ? null : threshold,
-      }..removeWhere((key, value) =>
-          key == null || value == null && !nullSupported.contains(key));
+        "enabled": enabled,
+        "snapToBottom": snapToBottom,
+        "snapToHorizontalCenter": snapToHorizontalCenter,
+        "snapToLeft": snapToLeft,
+        "snapToRight": snapToRight,
+        "snapToTop": snapToTop,
+        "snapToVerticalCenter": snapToVerticalCenter,
+        "threshold": threshold,
+      }..removeWhere(
+          (key, value) => value == null && !nullSupported.contains(key));
 }
 
 /// Snapping options for rotating sprites.
@@ -1427,7 +1686,7 @@ class RotationSnappingOptions {
   /// // Defaults to:
   /// true
   /// ```
-  final bool enabled;
+  final bool? enabled;
 
   /// Enabled snapping angles in degrees for rotating a sprite.
   /// The rotation angle is defined clockwise.
@@ -1435,7 +1694,7 @@ class RotationSnappingOptions {
   /// // Defaults to:
   /// [0, 45, 90, 135, 180, 225, 270, 315]
   /// ```
-  final List<double> snapToAngles;
+  final List<double>? snapToAngles;
 
   /// This threshold defines the arc length of a rotation gesture where
   /// snapping at a snap angle occurs. It is measured in points.
@@ -1443,16 +1702,20 @@ class RotationSnappingOptions {
   /// // Defaults to:
   /// 20
   /// ```
-  final double threshold;
+  final double? threshold;
 
   /// Converts [RotationSnappingOptions] for JSON parsing.
-  Map<String, dynamic> _toJson() => {
-        "enabled": enabled == null ? null : enabled,
-        "snapToAngles": snapToAngles == null
-            ? null
-            : List<dynamic>.from(snapToAngles.map((x) => x)),
-        "threshold": threshold == null ? null : threshold,
-      }..removeWhere((key, value) => key == null || value == null);
+  Map<String, dynamic> _toJson() {
+    final _snapToAngles = snapToAngles;
+
+    return {
+      "enabled": enabled,
+      "snapToAngles": _snapToAngles == null
+          ? null
+          : List<dynamic>.from(_snapToAngles.map((x) => x)),
+      "threshold": threshold,
+    }..removeWhere((key, value) => value == null);
+  }
 }
 
 /// Configuration options for `Tool.sticker`.
@@ -1473,7 +1736,7 @@ class StickerOptions {
   /// // Defaults to:
   /// [StickerAction.replace, StickerAction.opacity, StickerAction.color]
   /// ```
-  final List<StickerAction> actions;
+  final List<StickerAction>? actions;
 
   /// Defines all allowed actions for the sticker tool that are displayed as
   /// overlay buttons on the canvas.
@@ -1483,7 +1746,7 @@ class StickerOptions {
   /// [CanvasAction.add, CanvasAction.delete, CanvasAction.flip,
   /// CanvasAction.bringToFront, CanvasAction.undo, CanvasAction.redo]
   /// ```
-  final List<StickerCanvasAction> canvasActions;
+  final List<StickerCanvasAction>? canvasActions;
 
   /// Defines all available stickers. Each sticker must be assigned to a
   /// category. New items and categories can be mixed and matched with
@@ -1494,120 +1757,110 @@ class StickerOptions {
   /// ```
   /// // Defaults to:
   /// final items = [
-  ///   StickerCategory.existing(
-  ///       identifier: "imgly_sticker_category_emoticons",
+  ///   StickerCategory.existing("imgly_sticker_category_emoticons",
   ///       items: [
-  ///         Sticker.existing(identifier: "imgly_smart_sticker_weekday"),
-  ///         Sticker.existing(identifier: "imgly_smart_sticker_date"),
-  ///         Sticker.existing(identifier: "imgly_smart_sticker_time"),
-  ///         Sticker.existing(identifier: "imgly_smart_sticker_time_clock"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_grin"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_laugh"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_smile"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_wink"),
-  // ignore: lines_longer_than_80_chars
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_tongue_out_wink"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_angel"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_kisses"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_loving"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_kiss"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_wave"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_nerd"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_cool"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_blush"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_duckface"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_furious"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_angry"),
-  // ignore: lines_longer_than_80_chars
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_steaming_furious"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_anxious"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_cry"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_sobbing"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_loud_cry"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_wide_grin"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_impatient"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_tired"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_asleep"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_sleepy"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_deceased"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_attention"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_question"),
-  // ignore: lines_longer_than_80_chars
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_not_speaking_to_you"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_sick"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_pumpkin"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_boxer"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_idea"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_smoking"),
-  // ignore: lines_longer_than_80_chars
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_skateboard"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_guitar"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_music"),
-  // ignore: lines_longer_than_80_chars
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_sunbathing"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_hippie"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_humourous"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_hitman"),
-  // ignore: lines_longer_than_80_chars
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_harry_potter"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_business"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_batman"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_skull"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_ninja"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_masked"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_alien"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_wrestler"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_devil"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_star"),
-  // ignore: lines_longer_than_80_chars
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_baby_chicken"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_rabbit"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_pig"),
-  ///         Sticker.existing(identifier: "imgly_sticker_emoticons_chicken"),
+  ///         Sticker.existing("imgly_smart_sticker_weekday"),
+  ///         Sticker.existing("imgly_smart_sticker_date"),
+  ///         Sticker.existing("imgly_smart_sticker_time"),
+  ///         Sticker.existing("imgly_smart_sticker_time_clock"),
+  ///         Sticker.existing("imgly_sticker_emoticons_grin"),
+  ///         Sticker.existing("imgly_sticker_emoticons_laugh"),
+  ///         Sticker.existing("imgly_sticker_emoticons_smile"),
+  ///         Sticker.existing("imgly_sticker_emoticons_wink"),
+  ///         Sticker.existing("imgly_sticker_emoticons_tongue_out_wink"),
+  ///         Sticker.existing("imgly_sticker_emoticons_angel"),
+  ///         Sticker.existing("imgly_sticker_emoticons_kisses"),
+  ///         Sticker.existing("imgly_sticker_emoticons_loving"),
+  ///         Sticker.existing("imgly_sticker_emoticons_kiss"),
+  ///         Sticker.existing("imgly_sticker_emoticons_wave"),
+  ///         Sticker.existing("imgly_sticker_emoticons_nerd"),
+  ///         Sticker.existing("imgly_sticker_emoticons_cool"),
+  ///         Sticker.existing("imgly_sticker_emoticons_blush"),
+  ///         Sticker.existing("imgly_sticker_emoticons_duckface"),
+  ///         Sticker.existing("imgly_sticker_emoticons_furious"),
+  ///         Sticker.existing("imgly_sticker_emoticons_angry"),
+  ///         Sticker.existing("imgly_sticker_emoticons_steaming_furious"),
+  ///         Sticker.existing("imgly_sticker_emoticons_anxious"),
+  ///         Sticker.existing("imgly_sticker_emoticons_cry"),
+  ///         Sticker.existing("imgly_sticker_emoticons_sobbing"),
+  ///         Sticker.existing("imgly_sticker_emoticons_loud_cry"),
+  ///         Sticker.existing("imgly_sticker_emoticons_wide_grin"),
+  ///         Sticker.existing("imgly_sticker_emoticons_impatient"),
+  ///         Sticker.existing("imgly_sticker_emoticons_tired"),
+  ///         Sticker.existing("imgly_sticker_emoticons_asleep"),
+  ///         Sticker.existing("imgly_sticker_emoticons_sleepy"),
+  ///         Sticker.existing("imgly_sticker_emoticons_deceased"),
+  ///         Sticker.existing("imgly_sticker_emoticons_attention"),
+  ///         Sticker.existing("imgly_sticker_emoticons_question"),
+  ///         Sticker.existing("imgly_sticker_emoticons_not_speaking_to_you"),
+  ///         Sticker.existing("imgly_sticker_emoticons_sick"),
+  ///         Sticker.existing("imgly_sticker_emoticons_pumpkin"),
+  ///         Sticker.existing("imgly_sticker_emoticons_boxer"),
+  ///         Sticker.existing("imgly_sticker_emoticons_idea"),
+  ///         Sticker.existing("imgly_sticker_emoticons_smoking"),
+  ///         Sticker.existing("imgly_sticker_emoticons_skateboard"),
+  ///         Sticker.existing("imgly_sticker_emoticons_guitar"),
+  ///         Sticker.existing("imgly_sticker_emoticons_music"),
+  ///         Sticker.existing("imgly_sticker_emoticons_sunbathing"),
+  ///         Sticker.existing("imgly_sticker_emoticons_hippie"),
+  ///         Sticker.existing("imgly_sticker_emoticons_humourous"),
+  ///         Sticker.existing("imgly_sticker_emoticons_hitman"),
+  ///         Sticker.existing("imgly_sticker_emoticons_harry_potter"),
+  ///         Sticker.existing("imgly_sticker_emoticons_business"),
+  ///         Sticker.existing("imgly_sticker_emoticons_batman"),
+  ///         Sticker.existing("imgly_sticker_emoticons_skull"),
+  ///         Sticker.existing("imgly_sticker_emoticons_ninja"),
+  ///         Sticker.existing("imgly_sticker_emoticons_masked"),
+  ///         Sticker.existing("imgly_sticker_emoticons_alien"),
+  ///         Sticker.existing("imgly_sticker_emoticons_wrestler"),
+  ///         Sticker.existing("imgly_sticker_emoticons_devil"),
+  ///         Sticker.existing("imgly_sticker_emoticons_star"),
+  ///         Sticker.existing("imgly_sticker_emoticons_baby_chicken"),
+  ///         Sticker.existing("imgly_sticker_emoticons_rabbit"),
+  ///         Sticker.existing("imgly_sticker_emoticons_pig"),
+  ///         Sticker.existing("imgly_sticker_emoticons_chicken"),
   ///       ]),
-  ///   StickerCategory.existing(
-  ///       identifier: "imgly_sticker_category_shapes",
+  ///   StickerCategory.existing("imgly_sticker_category_shapes",
   ///       items: [
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_badge_01"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_badge_04"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_badge_12"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_badge_06"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_badge_13"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_badge_36"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_badge_08"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_badge_11"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_badge_35"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_badge_28"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_badge_32"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_badge_15"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_badge_20"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_badge_18"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_badge_19"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_arrow_02"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_arrow_03"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_spray_01"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_spray_04"),
-  ///         Sticker.existing(identifier: "imgly_sticker_shapes_spray_03"),
+  ///         Sticker.existing("imgly_sticker_shapes_badge_01"),
+  ///         Sticker.existing("imgly_sticker_shapes_badge_04"),
+  ///         Sticker.existing("imgly_sticker_shapes_badge_12"),
+  ///         Sticker.existing("imgly_sticker_shapes_badge_06"),
+  ///         Sticker.existing("imgly_sticker_shapes_badge_13"),
+  ///         Sticker.existing("imgly_sticker_shapes_badge_36"),
+  ///         Sticker.existing("imgly_sticker_shapes_badge_08"),
+  ///         Sticker.existing("imgly_sticker_shapes_badge_11"),
+  ///         Sticker.existing("imgly_sticker_shapes_badge_35"),
+  ///         Sticker.existing("imgly_sticker_shapes_badge_28"),
+  ///         Sticker.existing("imgly_sticker_shapes_badge_32"),
+  ///         Sticker.existing("imgly_sticker_shapes_badge_15"),
+  ///         Sticker.existing("imgly_sticker_shapes_badge_20"),
+  ///         Sticker.existing("imgly_sticker_shapes_badge_18"),
+  ///         Sticker.existing("imgly_sticker_shapes_badge_19"),
+  ///         Sticker.existing("imgly_sticker_shapes_arrow_02"),
+  ///         Sticker.existing("imgly_sticker_shapes_arrow_03"),
+  ///         Sticker.existing("imgly_sticker_shapes_spray_01"),
+  ///         Sticker.existing("imgly_sticker_shapes_spray_04"),
+  ///         Sticker.existing("imgly_sticker_shapes_spray_03"),
   ///       ]),
-  ///   StickerCategory.existing(
-  ///       identifier: "imgly_sticker_category_animated",
+  ///   StickerCategory.existing("imgly_sticker_category_animated",
   ///       items: [
-  ///         Sticker.existing(identifier: "imgly_sticker_animated_camera"),
-  ///         Sticker.existing(identifier: "imgly_sticker_animated_clouds"),
-  ///         Sticker.existing(identifier: "imgly_sticker_animated_coffee"),
-  ///         Sticker.existing(identifier: "imgly_sticker_animated_fire"),
-  ///         Sticker.existing(identifier: "imgly_sticker_animated_flower"),
-  ///         Sticker.existing(identifier: "imgly_sticker_animated_gift"),
-  ///         Sticker.existing(identifier: "imgly_sticker_animated_heart"),
-  ///         Sticker.existing(identifier: "imgly_sticker_animated_movie_clap"),
-  ///         Sticker.existing(identifier: "imgly_sticker_animated_rainbow"),
-  ///         Sticker.existing(identifier: "imgly_sticker_animated_stars"),
-  ///         Sticker.existing(identifier: "imgly_sticker_animated_sun"),
-  ///         Sticker.existing(identifier: "imgly_sticker_animated_thumbs_up"),
+  ///         Sticker.existing("imgly_sticker_animated_camera"),
+  ///         Sticker.existing("imgly_sticker_animated_clouds"),
+  ///         Sticker.existing("imgly_sticker_animated_coffee"),
+  ///         Sticker.existing("imgly_sticker_animated_fire"),
+  ///         Sticker.existing("imgly_sticker_animated_flower"),
+  ///         Sticker.existing("imgly_sticker_animated_gift"),
+  ///         Sticker.existing("imgly_sticker_animated_heart"),
+  ///         Sticker.existing("imgly_sticker_animated_movie_clap"),
+  ///         Sticker.existing("imgly_sticker_animated_rainbow"),
+  ///         Sticker.existing("imgly_sticker_animated_stars"),
+  ///         Sticker.existing("imgly_sticker_animated_sun"),
+  ///         Sticker.existing("imgly_sticker_animated_thumbs_up"),
   ///       ])
   /// ];
   /// ```
-  final List<StickerCategory> categories;
+  final List<StickerCategory>? categories;
 
   /// Defines all available colors that can be applied to stickers with a
   /// `tintMode` other than `TintMode.none`.
@@ -1633,14 +1886,14 @@ class StickerOptions {
   ///   NamedColor(color: Color([0.33, 1.00, 0.92, 1]), name: "Aquamarin"),
   /// ];
   /// ```
-  final ColorPalette colors;
+  final ColorPalette? colors;
 
   /// The default tint mode for personal stickers.
   /// ```
   /// // Defaults to:
   /// TintMode.none
   /// ```
-  final TintMode defaultPersonalStickerTintMode;
+  final TintMode? defaultPersonalStickerTintMode;
 
   /// If enabled the user can create personal stickers from the device's photo
   /// library. A button is added as first item in the menu in front of the
@@ -1653,27 +1906,33 @@ class StickerOptions {
   /// // Defaults to:
   /// false
   /// ```
-  final bool personalStickers;
+  final bool? personalStickers;
 
   /// Converts the [StickerOptions] for JSON parsing.
-  Map<String, dynamic> _toJson() => {
-        "actions": actions == null
-            ? null
-            : List<dynamic>.from(
-                actions.map((x) => _stickerActionValues.reverse[x])),
-        "canvasActions": canvasActions == null
-            ? null
-            : List<dynamic>.from(canvasActions
-                .map((x) => _stickerCanvasActionValues.reverse[x])),
-        "categories": categories == null
-            ? null
-            : List<dynamic>.from(categories.map((x) => x._toJson())),
-        "colors": colors == null ? null : colors._toJson(),
-        "defaultPersonalStickerTintMode": defaultPersonalStickerTintMode == null
-            ? null
-            : _tintModeValues.reverse[defaultPersonalStickerTintMode],
-        "personalStickers": personalStickers == null ? null : personalStickers,
-      }..removeWhere((key, value) => key == null || value == null);
+  Map<String, dynamic> _toJson() {
+    final _actions = actions;
+    final _canvasActions = canvasActions;
+    final _categories = categories;
+
+    return {
+      "actions": _actions == null
+          ? null
+          : List<dynamic>.from(
+              _actions.map((x) => _stickerActionValues.reverse[x])),
+      "canvasActions": _canvasActions == null
+          ? null
+          : List<dynamic>.from(
+              _canvasActions.map((x) => _stickerCanvasActionValues.reverse[x])),
+      "categories": _categories == null
+          ? null
+          : List<dynamic>.from(_categories.map((x) => x._toJson())),
+      "colors": colors?._toJson(),
+      "defaultPersonalStickerTintMode": defaultPersonalStickerTintMode == null
+          ? null
+          : _tintModeValues.reverse[defaultPersonalStickerTintMode],
+      "personalStickers": personalStickers,
+    }..removeWhere((key, value) => value == null);
+  }
 }
 
 /// A sticker action.
@@ -1780,7 +2039,7 @@ class TextOptions {
   /// [TextAction.font, TextAction.color,
   /// TextAction.backgroundColor, TextAction.alignment]
   /// ```
-  final List<TextAction> actions;
+  final List<TextAction>? actions;
 
   /// Defines all available colors that can be applied to the background.
   /// The color pipette is always added.
@@ -1805,7 +2064,7 @@ class TextOptions {
   ///   NamedColor(color: Color([0.33, 1.00, 0.92, 1]), name: "Aquamarin"),
   /// ];
   /// ```
-  final ColorPalette backgroundColors;
+  final ColorPalette? backgroundColors;
 
   /// Defines all allowed actions for the text tool that are displayed as
   /// overlay buttons on the canvas.
@@ -1815,39 +2074,53 @@ class TextOptions {
   /// CanvasAction.bringToFront, CanvasAction.undo,
   /// CanvasAction.redo]
   /// ```
-  final List<StickerCanvasAction> canvasActions;
+  final List<StickerCanvasAction>? canvasActions;
 
   /// Defines the default text color for newly created text.
   /// ```
   /// // Defaults to:
   /// [1, 1, 1, 1]
   /// ```
-  final Color defaultTextColor;
+  final Color? defaultTextColor;
 
   /// Defines all available fonts.
   /// New items can be mixed and matched with existing ones.
   /// ```
   /// // Defaults to:
   /// final items = [
-  ///   Font.existing(identifier: "imgly_font_open_sans_bold"),
-  ///   Font.existing(identifier: "imgly_font_aleo_bold"),
-  ///   Font.existing(identifier: "imgly_font_amaticsc"),
-  ///   Font.existing(identifier: "imgly_font_bernier_regular"),
-  ///   Font.existing(identifier: "imgly_font_cheque_regular"),
-  ///   Font.existing(identifier: "imgly_font_gagalin_regular"),
-  ///   Font.existing(identifier: "imgly_font_hagin_caps_thin"),
-  ///   Font.existing(identifier: "imgly_font_intro_inline"),
-  ///   Font.existing(identifier: "imgly_font_lobster"),
-  ///   Font.existing(identifier: "imgly_font_nexa_script"),
-  ///   Font.existing(identifier: "imgly_font_ostrich_sans_black"),
-  ///   Font.existing(identifier: "imgly_font_ostrich_sans_bold"),
-  ///   Font.existing(identifier: "imgly_font_panton_blackitalic_caps"),
-  ///   Font.existing(identifier: "imgly_font_panton_lightitalic_caps"),
-  ///   Font.existing(identifier: "imgly_font_perfograma"),
-  ///   Font.existing(identifier: "imgly_font_trash_hand"),
+  ///   Font.existing("imgly_font_open_sans_bold"),
+  ///   Font.existing("imgly_font_aleo_bold"),
+  ///   Font.existing("imgly_font_amaticsc"),
+  ///   Font.existing("imgly_font_archivo_black"),
+  ///   Font.existing("imgly_font_bungee_inline"),
+  ///   Font.existing("imgly_font_campton_bold"),
+  ///   Font.existing("imgly_font_carter_one"),
+  ///   Font.existing("imgly_font_codystar"),
+  ///   Font.existing("imgly_font_fira_sans_regular"),
+  ///   Font.existing("imgly_font_galano_grotesque_bold"),
+  ///   Font.existing("imgly_font_krona_one"),
+  ///   Font.existing("imgly_font_kumar_one_outline"),
+  ///   Font.existing("imgly_font_lobster"),
+  ///   Font.existing("imgly_font_molle"),
+  ///   Font.existing("imgly_font_monoton"),
+  ///   Font.existing("imgly_font_nixie_one"),
+  ///   Font.existing("imgly_font_notable"),
+  ///   Font.existing("imgly_font_ostrich_sans_black"),
+  ///   Font.existing("imgly_font_ostrich_sans_bold"),
+  ///   Font.existing("imgly_font_oswald_semi_bold"),
+  ///   Font.existing("imgly_font_palanquin_dark_semi_bold"),
+  ///   Font.existing("imgly_font_permanent_marker"),
+  ///   Font.existing("imgly_font_poppins"),
+  ///   Font.existing("imgly_font_roboto_black_italic"),
+  ///   Font.existing("imgly_font_roboto_light_italic"),
+  ///   Font.existing("imgly_font_sancreek"),
+  ///   Font.existing("imgly_font_stint_ultra_expanded"),
+  ///   Font.existing("imgly_font_trash_hand"),
+  ///   Font.existing("imgly_font_vt323"),
+  ///   Font.existing("imgly_font_yeseva_one"),
   /// ];
   /// ```
-  final List<Font> fonts;
+  final List<Font>? fonts;
 
   /// Defines all available colors that can be applied to the text.
   /// The color pipette is always added.
@@ -1872,27 +2145,32 @@ class TextOptions {
   ///   NamedColor(color: Color([0.33, 1.00, 0.92, 1]), name: "Aquamarin"),
   /// ];
   /// ```
-  final ColorPalette textColors;
+  final ColorPalette? textColors;
 
   /// Converts the [TextOptions] for JSON parsing.
-  Map<String, dynamic> _toJson() => {
-        "actions": actions == null
-            ? null
-            : List<dynamic>.from(
-                actions.map((x) => _textActionValues.reverse[x])),
-        "backgroundColors":
-            backgroundColors == null ? null : backgroundColors._toJson(),
-        "canvasActions": canvasActions == null
-            ? null
-            : List<dynamic>.from(canvasActions
-                .map((x) => _stickerCanvasActionValues.reverse[x])),
-        "defaultTextColor":
-            defaultTextColor == null ? null : defaultTextColor._toJson(),
-        "fonts": fonts == null
-            ? null
-            : List<dynamic>.from(fonts.map((x) => x._toJson())),
-        "textColors": textColors == null ? null : textColors._toJson(),
-      }..removeWhere((key, value) => key == null || value == null);
+  Map<String, dynamic> _toJson() {
+    final _actions = actions;
+    final _backgroundColors = backgroundColors;
+    final _canvasActions = canvasActions;
+    final _fonts = fonts;
+
+    return {
+      "actions": _actions == null
+          ? null
+          : List<dynamic>.from(
+              _actions.map((x) => _textActionValues.reverse[x])),
+      "backgroundColors": _backgroundColors?._toJson(),
+      "canvasActions": _canvasActions == null
+          ? null
+          : List<dynamic>.from(
+              _canvasActions.map((x) => _stickerCanvasActionValues.reverse[x])),
+      "defaultTextColor": defaultTextColor?._toJson(),
+      "fonts": _fonts == null
+          ? null
+          : List<dynamic>.from(_fonts.map((x) => x._toJson())),
+      "textColors": textColors?._toJson(),
+    }..removeWhere((key, value) => value == null);
+  }
 }
 
 /// A text action.
@@ -1919,18 +2197,40 @@ final _textActionValues = _EnumValues({
 });
 
 /// A font.
-class Font extends _NamedItem {
-  /// Creates a new [Font].
-  Font(
+abstract class Font extends _NamedItem {
+  /// Retrieves an existing font with the given [identifier].
+  Font._existing(String identifier) : super.existing(identifier);
+
+  /// Creates a new named [Font].
+  Font._custom(String identifier, String name) : super(identifier, name);
+
+  /// Retrieves an [ExistingFont] with the given [identifier].
+  factory Font.existing(String identifier) => ExistingFont(identifier);
+
+  /// Creates a new [CustomFont].
+  factory Font(String identifier, String fontName, String name,
+          {String? fontUri}) =>
+      CustomFont(identifier, fontName, name, fontUri: fontUri);
+
+  /// Converts the [Font] for JSON parsing.
+  Map<String, dynamic> _toJson() => {"identifier": identifier};
+}
+
+/// An existing font.
+class ExistingFont extends Font {
+  /// Retrieves an existing font with the given [identifier].
+  ExistingFont(String identifier) : super._existing(identifier);
+}
+
+/// A custom font.
+class CustomFont extends Font {
+  /// Creates a new [CustomFont].
+  CustomFont(
     String identifier,
     this.fontName,
     String name, {
     this.fontUri,
-  }) : super(identifier, name);
-
-  /// Retrieves an existing [Font] with the given [identifier].
-  Font.existing(String identifier)
-      : this(identifier, null, null, fontUri: null);
+  }) : super._custom(identifier, name);
 
   /// The actual font name or system font name, e.g. `Chalkduster`.
   final String fontName;
@@ -1944,15 +2244,16 @@ class Font extends _NamedItem {
   /// // Defaults to:
   /// null
   /// ```
-  final String fontUri;
+  final String? fontUri;
 
   /// Converts the [Font] for JSON parsing.
+  @override
   Map<String, dynamic> _toJson() => {
-        "identifier": identifier == null ? null : identifier,
-        "fontName": fontName == null ? null : fontName,
-        "fontURI": fontUri == null ? null : fontUri,
-        "name": name == null ? null : name,
-      }..removeWhere((key, value) => key == null || value == null);
+        "identifier": identifier,
+        "fontName": fontName,
+        "fontURI": fontUri,
+        "name": name,
+      }..removeWhere((key, value) => value == null);
 }
 
 /// Configuration options for `Tool.textDesign`.
@@ -1966,25 +2267,50 @@ class TextDesignOptions {
 
   /// The available [TextDesignCanvasAction] when a text design
   /// is selected.
-  final List<TextDesignCanvasAction> canvasActions;
+  final List<TextDesignCanvasAction>? canvasActions;
 
   /// The available colors to choose from.
-  final ColorPalette colors;
+  final ColorPalette? colors;
 
   /// The available [TextDesign]s.
-  final List<TextDesign> items;
+  /// ```
+  /// // Defaults to:
+  /// final items = [
+  ///   TextDesign.existing("imgly_text_design_blocks"),
+  ///   TextDesign.existing("imgly_text_design_rotated"),
+  ///   TextDesign.existing("imgly_text_design_blocks_light"),
+  ///   TextDesign.existing("imgly_text_design_equal_width"),
+  ///   TextDesign.existing("imgly_text_design_masked"),
+  ///   TextDesign.existing("imgly_text_design_celebrate"),
+  ///   TextDesign.existing("imgly_text_design_sunshine"),
+  ///   TextDesign.existing("imgly_text_design_masked_badge"),
+  ///   TextDesign.existing("imgly_text_design_blocks_condensed"),
+  ///   TextDesign.existing("imgly_text_design_celebrate_simple"),
+  ///   TextDesign.existing("imgly_text_design_equal_width_fat"),
+  ///   TextDesign.existing("imgly_text_design_watercolor"),
+  ///   TextDesign.existing("imgly_text_design_particles"),
+  ///   TextDesign.existing("imgly_text_design_masked_speech_bubble"),
+  ///   TextDesign.existing("imgly_text_design_masked_speech_bubble_comic"),
+  ///   TextDesign.existing("imgly_text_design_multiline"),
+  /// ];
+  /// ```
+  final List<TextDesign>? items;
 
   /// Converts the [TextDesignOptions] for JSON parsing.
-  Map<String, dynamic> _toJson() => {
-        "canvasActions": canvasActions == null
-            ? null
-            : List<dynamic>.from(canvasActions
-                .map((x) => _textDesignCanvasActionValues.reverse[x])),
-        "colors": colors == null ? null : colors._toJson(),
-        "items": items == null
-            ? null
-            : List<dynamic>.from(items.map((x) => x._toJson())),
-      }..removeWhere((key, value) => key == null || value == null);
+  Map<String, dynamic> _toJson() {
+    final _canvasActions = canvasActions;
+    final _items = items;
+    return {
+      "canvasActions": _canvasActions == null
+          ? null
+          : List<dynamic>.from(_canvasActions
+              .map((x) => _textDesignCanvasActionValues.reverse[x])),
+      "colors": colors?._toJson(),
+      "items": _items == null
+          ? null
+          : List<dynamic>.from(_items.map((x) => x._toJson())),
+    }..removeWhere((key, value) => value == null);
+  }
 }
 
 /// A text design canvas action.
@@ -2027,50 +2353,59 @@ class TextDesign extends _UniqueItem {
 
   /// Converts the [TextDesign] for JSON parsing.
   Map<String, dynamic> _toJson() => {
-        "identifier": identifier == null ? null : identifier,
-      }..removeWhere((key, value) => key == null || value == null);
+        "identifier": identifier,
+      }..removeWhere((key, value) => value == null);
 }
 
 /// An image and/or video editing tool.
 enum Tool {
-  /// Adjust tool.
+  /// A tool to apply image adjustments.
   adjustment,
 
-  /// Brush tool.
+  /// A tool to edit the audio track of videos.
+  audio,
+
+  /// A tool to add drawings.
   brush,
 
-  /// Filter tool.
+  /// A tool to compose a video from multiple video clips and to trim the
+  /// timeline of the composition and the individual clips.
+  composition,
+
+  /// A tool to apply an image filter effect.
   filter,
 
-  /// Focus tool.
+  /// A tool to add blur.
   focus,
 
-  /// Frame tool.
+  /// A tool to add a frame.
   frame,
 
-  /// Overlay tool.
+  /// A tool to add an overlay..
   overlay,
 
-  /// Sticker tool.
+  /// A tool to add stickers.
   sticker,
 
-  /// Text tool.
+  /// A tool to add texts.
   text,
 
-  /// Text design tool.
+  /// A tool to add text designs.
   textDesign,
 
-  /// Transform tool.
+  /// A tool to apply an transformation, such as cropping or rotation.
   transform,
 
-  /// Trim tool **(for video_editor_sdk only)**.
+  /// A tool to trim the timeline of videos.
   trim
 }
 
 /// The corresponding values to the [Tool].
 final _toolValues = _EnumValues({
   "adjustment": Tool.adjustment,
+  "audio": Tool.audio,
   "brush": Tool.brush,
+  "composition": Tool.composition,
   "filter": Tool.filter,
   "focus": Tool.focus,
   "frame": Tool.frame,
@@ -2097,7 +2432,7 @@ class TransformOptions {
   /// // Default to:
   /// true
   /// ```
-  final bool allowFreeCrop;
+  final bool? allowFreeCrop;
 
   /// Defines all allowed crop aspect ratios. The crop ratio buttons are shown
   /// in the given order.
@@ -2110,7 +2445,7 @@ class TransformOptions {
   ///   CropRatio(width: 3, height: 2, toggleable: true),
   /// ];
   /// ```
-  final List<CropRatio> items;
+  final List<CropRatio>? items;
 
   /// Whether to show a reset button to reset the applied crop, rotation and
   /// tilt angle.
@@ -2118,16 +2453,20 @@ class TransformOptions {
   /// // Defaults to:
   /// true
   /// ```
-  final bool showResetButton;
+  final bool? showResetButton;
 
   /// Converts [TransformOptions] for JSON parsing.
-  Map<String, dynamic> _toJson() => {
-        "allowFreeCrop": allowFreeCrop == null ? null : allowFreeCrop,
-        "items": items == null
-            ? null
-            : List<dynamic>.from(items.map((x) => x._toJson())),
-        "showResetButton": showResetButton == null ? null : showResetButton,
-      }..removeWhere((key, value) => key == null || value == null);
+  Map<String, dynamic> _toJson() {
+    final _items = items;
+
+    return {
+      "allowFreeCrop": allowFreeCrop,
+      "items": _items == null
+          ? null
+          : List<dynamic>.from(_items.map((x) => x._toJson())),
+      "showResetButton": showResetButton,
+    }..removeWhere((key, value) => value == null);
+  }
 }
 
 /// A crop aspect ratio.
@@ -2152,41 +2491,82 @@ class CropRatio {
   /// // Defaults to:
   /// null
   /// ```
-  final String name;
+  final String? name;
 
   /// If enabled the `width` and `height` of a ratio can be toggled in the UI.
   /// ```
   /// // Defaults to:
   /// false
   /// ```
-  final bool toggleable;
+  final bool? toggleable;
 
   /// The width of the ratio.
   final double width;
 
   /// Converts the [CropRatio] for JSON parsing.
   Map<String, dynamic> _toJson() => {
-        "height": height == null ? null : height,
-        "name": name == null ? null : name,
-        "toggleable": toggleable == null ? null : toggleable,
-        "width": width == null ? null : width,
-      }..removeWhere((key, value) => key == null || value == null);
+        "height": height,
+        "name": name,
+        "toggleable": toggleable,
+        "width": width,
+      }..removeWhere((key, value) => value == null);
 }
 
 /// A filter category.
-class FilterCategory extends _NamedItem {
-  /// Creates a new [FilterCategory].
-  FilterCategory(
+abstract class FilterCategory extends _NamedItem {
+  /// Retrieves an existing filter category with the given [identifier].
+  FilterCategory._existing(String identifier) : super.existing(identifier);
+
+  /// Creates a new named [FilterCategory].
+  FilterCategory._custom(String identifier, String name)
+      : super(identifier, name);
+
+  /// Retrieves an [ExistingFilterCategory] with the given [identifier].
+  factory FilterCategory.existing(String identifier, {List<Filter>? items}) =>
+      ExistingFilterCategory(identifier, items: items);
+
+  /// Creates a new [CustomFilterCategory].
+  factory FilterCategory(String identifier, String name,
+          {String? thumbnailUri, List<Filter>? items}) =>
+      CustomFilterCategory(identifier, name,
+          thumbnailUri: thumbnailUri, items: items);
+
+  /// Converts the [FilterCategory] for JSON parsing.
+  Map<String, dynamic> _toJson() => {"identifier": identifier};
+}
+
+/// A existing filter category.
+class ExistingFilterCategory extends FilterCategory {
+  /// Retrieves an existing filter category with the given [identifier].
+  ExistingFilterCategory(String identifier, {this.items})
+      : super._existing(identifier);
+
+  /// Items of the category which can be existing or new defined filters.
+  final List<Filter>? items;
+
+  @override
+  Map<String, dynamic> _toJson() {
+    final map = super._toJson();
+    final _items = items;
+
+    if (_items == null) {
+      return map;
+    } else {
+      map.addAll({"items": List<dynamic>.from(_items.map((e) => e._toJson()))});
+      return map;
+    }
+  }
+}
+
+/// A custom filter category.
+class CustomFilterCategory extends FilterCategory {
+  /// Creates a new [CustomFilterCategory].
+  CustomFilterCategory(
     String identifier,
     String name, {
     this.items,
     this.thumbnailUri,
-  }) : super(identifier, name);
-
-  /// Retrieves an existing [FilterCategory] with the given [identifier].
-  /// You can further modify which existing [items] should be included.
-  FilterCategory.existing(String identifier, {List<Filter> items})
-      : this(identifier, null, items: items, thumbnailUri: null);
+  }) : super._custom(identifier, name);
 
   /// Items of the category which can be existing or new defined filters.
   /// If `null` an empty category will be created.
@@ -2194,7 +2574,7 @@ class FilterCategory extends _NamedItem {
   /// // Defaults to:
   /// null
   /// ```
-  final List<Filter> items;
+  final List<Filter>? items;
 
   /// The source for the thumbnail image of the filter.
   /// This should either be the full path, a uri or if
@@ -2207,32 +2587,46 @@ class FilterCategory extends _NamedItem {
   /// // Defaults to:
   /// null
   /// ```
-  final String thumbnailUri;
+  final String? thumbnailUri;
 
   /// Converts the [FilterCategory] for JSON parsing.
-  Map<String, dynamic> _toJson() => {
-        "identifier": identifier == null ? null : identifier,
-        "items": items == null
-            ? null
-            : List<dynamic>.from(items.map((x) => x._toJson())),
-        "name": name == null ? null : name,
-        "thumbnailURI": thumbnailUri == null ? null : thumbnailUri,
-      }..removeWhere((key, value) => key == null || value == null);
+  @override
+  Map<String, dynamic> _toJson() {
+    final map = Map<String, dynamic>.from({
+      "identifier": identifier,
+      "name": name,
+      "thumbnailURI": thumbnailUri,
+    });
+
+    final _items = items;
+    if (_items != null) {
+      map.addAll({
+        "items": List<dynamic>.from(_items.map((x) => x._toJson())),
+      });
+    }
+    return map..removeWhere((key, value) => value == null);
+  }
 }
 
-/// A Filter.
-class Filter extends _NamedItem {
-  /// Creates a new [Filter].
-  Filter(String identifier, String name) : super(identifier, name);
+/// A filter.
+abstract class Filter extends _NamedItem {
+  /// Retrieves an existing filter with the given [identifier].
+  Filter._existing(String identifier) : super.existing(identifier);
 
-  /// Retrieves an existing [Filter] with the given [identifier].
-  Filter.existing(String identifier) : super.existing(identifier);
+  /// Creates a new named [Filter].
+  Filter._custom(String identifier, String name) : super(identifier, name);
+
+  /// Retrieves an [ExistingFilter] with the given [identifier].
+  factory Filter.existing(String identifier) => ExistingFilter(identifier);
 
   /// Converts the [Filter] for JSON parsing.
-  Map<String, dynamic> _toJson() => {
-        "identifier": identifier == null ? null : identifier,
-        "name": name == null ? null : name
-      }..removeWhere((key, value) => key == null || value == null);
+  Map<String, dynamic> _toJson() => {"identifier": identifier};
+}
+
+/// An existing filter.
+class ExistingFilter extends Filter {
+  /// Retrieves an existing filter with the given [identifier].
+  ExistingFilter(String identifier) : super._existing(identifier);
 }
 
 /// A look up table (LUT) image filter.
@@ -2244,7 +2638,7 @@ class LutFilter extends Filter {
     this.lutUri, {
     this.horizontalTileCount,
     this.verticalTileCount,
-  }) : super(identifier, name);
+  }) : super._custom(identifier, name);
 
   /// The source of the look up table (LUT) image.
   /// This should either be the full path, a uri or if
@@ -2257,26 +2651,24 @@ class LutFilter extends Filter {
   /// // Defaults to:
   /// 5
   /// ```
-  final double horizontalTileCount;
+  final double? horizontalTileCount;
 
   /// The number of vertical tiles in the LUT image.
   /// ```
   /// // Defaults to:
   /// 5
   /// ```
-  final double verticalTileCount;
+  final double? verticalTileCount;
 
   /// Converts a [LutFilter] for JSON parsing.
   @override
   Map<String, dynamic> _toJson() => {
-        "horizontalTileCount":
-            horizontalTileCount == null ? null : horizontalTileCount,
-        "identifier": identifier == null ? null : identifier,
-        "lutURI": lutUri == null ? null : lutUri,
-        "name": name == null ? null : name,
-        "verticalTileCount":
-            verticalTileCount == null ? null : verticalTileCount,
-      }..removeWhere((key, value) => key == null || value == null);
+        "horizontalTileCount": horizontalTileCount,
+        "identifier": identifier,
+        "lutURI": lutUri,
+        "name": name,
+        "verticalTileCount": verticalTileCount,
+      }..removeWhere((key, value) => value == null);
 }
 
 /// A duoTone image filter.
@@ -2287,7 +2679,7 @@ class DuoToneFilter extends Filter {
     String name,
     this.darkColor,
     this.lightColor,
-  ) : super(identifier, name);
+  ) : super._custom(identifier, name);
 
   /// The duoTone color that is mapped to dark colors of the input image.
   final Color darkColor;
@@ -2298,27 +2690,67 @@ class DuoToneFilter extends Filter {
   /// Converts a [DuoToneFilter] for JSON parsing.
   @override
   Map<String, dynamic> _toJson() => {
-        "darkColor": darkColor == null ? null : darkColor._toJson(),
-        "identifier": identifier == null ? null : identifier,
-        "lightColor": lightColor == null ? null : lightColor._toJson(),
-        "name": name == null ? null : name,
-      }..removeWhere((key, value) => key == null || value == null);
+        "darkColor": darkColor._toJson(),
+        "identifier": identifier,
+        "lightColor": lightColor._toJson(),
+        "name": name,
+      }..removeWhere((key, value) => value == null);
 }
 
 /// A sticker category.
-class StickerCategory extends _NamedItem {
-  /// Creates a new [StickerCategory].
-  StickerCategory(
+abstract class StickerCategory extends _NamedItem {
+  /// Retrieves an existing sticker category with the given [identifier].
+  StickerCategory._existing(String identifier) : super.existing(identifier);
+
+  /// Creates a new named [StickerCategory].
+  StickerCategory._custom(String identifier, String name)
+      : super(identifier, name);
+
+  /// Retrieves an [ExistingStickerCategory] with the given [identifier].
+  factory StickerCategory.existing(String identifier, {List<Sticker>? items}) =>
+      ExistingStickerCategory(identifier, items: items);
+
+  /// Creates a new [CustomStickerCategory].
+  factory StickerCategory(String identifier, String name, String thumbnailUri,
+          {List<Sticker>? items}) =>
+      CustomStickerCategory(identifier, name, thumbnailUri, items: items);
+
+  /// Converts the [StickerCategory] for JSON parsing.
+  Map<String, dynamic> _toJson() => {"identifier": identifier};
+}
+
+/// A existing sticker category.
+class ExistingStickerCategory extends StickerCategory {
+  /// Retrieves an existing sticker category with the given [identifier].
+  ExistingStickerCategory(String identifier, {this.items})
+      : super._existing(identifier);
+
+  /// Items of the category which can be existing or new defined stickers.
+  final List<Sticker>? items;
+
+  @override
+  Map<String, dynamic> _toJson() {
+    final map = super._toJson();
+    final _items = items;
+
+    if (_items == null) {
+      return map;
+    } else {
+      map.addAll({"items": List<dynamic>.from(_items.map((e) => e._toJson()))});
+      return map;
+    }
+  }
+}
+
+/// A custom sticker category.
+class CustomStickerCategory extends StickerCategory {
+  /// Creates a new [CustomStickerCategory].
+  CustomStickerCategory(
     String identifier,
     String name,
     this.thumbnailUri, {
     this.items,
-  }) : super(identifier, name);
-
-  /// Retrieves an existing [StickerCategory] with the given [identifier].
-  /// You can further modify which [items] should be included.
-  StickerCategory.existing(String identifier, {List<Sticker> items})
-      : this(identifier, null, null, items: items);
+  }) : super._custom(identifier, name);
 
   /// Items of the category which can be existing or new defined stickers.
   /// If `null` an empty category will be created.
@@ -2326,7 +2758,7 @@ class StickerCategory extends _NamedItem {
   /// // Defaults to:
   /// null
   /// ```
-  final List<Sticker> items;
+  final List<Sticker>? items;
 
   /// The source of the thumbnail image of the category.
   /// This should either be the full path, a uri or if
@@ -2335,32 +2767,62 @@ class StickerCategory extends _NamedItem {
   final String thumbnailUri;
 
   /// Converts a [StickerCategory] for JSON parsing.
-  Map<String, dynamic> _toJson() => {
-        "identifier": identifier == null ? null : identifier,
-        "items": items == null
-            ? null
-            : List<dynamic>.from(items.map((x) => x._toJson())),
-        "name": name == null ? null : name,
-        "thumbnailURI": thumbnailUri == null ? null : thumbnailUri,
-      }..removeWhere((key, value) => key == null || value == null);
+  @override
+  Map<String, dynamic> _toJson() {
+    final map = Map<String, dynamic>.from({
+      "identifier": identifier,
+      "name": name,
+      "thumbnailURI": thumbnailUri,
+    });
+
+    final _items = items;
+    if (_items != null) {
+      map.addAll({"items": List<dynamic>.from(_items.map((x) => x._toJson()))});
+    }
+    return map..removeWhere((key, value) => value == null);
+  }
 }
 
 /// A sticker.
-class Sticker extends _NamedItem {
-  /// Creates a new [Sticker].
-  Sticker(
+abstract class Sticker extends _NamedItem {
+  /// Retrieves an existing sticker with the given [identifier].
+  Sticker._existing(String identifier) : super.existing(identifier);
+
+  /// Creates a new named [Sticker].
+  Sticker._custom(String identifier, String name) : super(identifier, name);
+
+  /// Retrieves an [ExistingSticker] with the given [identifier].
+  factory Sticker.existing(String identifier) => ExistingSticker(identifier);
+
+  /// Creates a new [CustomSticker].
+  factory Sticker(String identifier, String name, String stickerUri,
+          {bool? adjustments, String? thumbnailUri, TintMode? tintMode}) =>
+      CustomSticker(identifier, name, stickerUri,
+          adjustments: adjustments,
+          thumbnailUri: thumbnailUri,
+          tintMode: tintMode);
+
+  /// Converts the [Sticker] for JSON parsing.
+  Map<String, dynamic> _toJson() => {"identifier": identifier};
+}
+
+/// An existing sticker.
+class ExistingSticker extends Sticker {
+  /// Retrieves an existing sticker with the given [identifier].
+  ExistingSticker(String identifier) : super._existing(identifier);
+}
+
+/// A custom sticker.
+class CustomSticker extends Sticker {
+  /// Creates a new [CustomSticker].
+  CustomSticker(
     String identifier,
     String name,
     this.stickerUri, {
     this.adjustments,
     this.thumbnailUri,
     this.tintMode,
-  }) : super(identifier, name);
-
-  /// Retrieves an existing [Sticker] with the given [identifier].
-  Sticker.existing(String identifier)
-      : this(identifier, null, null,
-            adjustments: null, thumbnailUri: null, tintMode: null);
+  }) : super._custom(identifier, name);
 
   /// If enabled the brightness, contrast, and saturation of a sticker can
   /// be changed if the corresponding `StickerAction`s in the `Tool.sticker`
@@ -2369,7 +2831,7 @@ class Sticker extends _NamedItem {
   /// // Defaults to:
   /// false
   /// ```
-  final bool adjustments;
+  final bool? adjustments;
 
   /// The source of the sticker image.
   /// This should either be the full path, a uri or if
@@ -2387,24 +2849,25 @@ class Sticker extends _NamedItem {
   /// // Defaults to:
   /// null
   /// ```
-  final String thumbnailUri;
+  final String? thumbnailUri;
 
   /// The sticker tint mode.
   /// ```
   /// // Defaults to:
   /// TintMode.none
   /// ```
-  final TintMode tintMode;
+  final TintMode? tintMode;
 
   /// Converts a [Sticker] for JSON parsing.
+  @override
   Map<String, dynamic> _toJson() => {
-        "adjustments": adjustments == null ? null : adjustments,
-        "identifier": identifier == null ? null : identifier,
-        "name": name == null ? null : name,
-        "stickerURI": stickerUri == null ? null : stickerUri,
-        "thumbnailURI": thumbnailUri == null ? null : thumbnailUri,
+        "adjustments": adjustments,
+        "identifier": identifier,
+        "name": name,
+        "stickerURI": stickerUri,
+        "thumbnailURI": thumbnailUri,
         "tintMode": tintMode == null ? null : _tintModeValues.reverse[tintMode],
-      }..removeWhere((key, value) => key == null || value == null);
+      }..removeWhere((key, value) => value == null);
 }
 
 /// A unique identifiable item.
@@ -2419,16 +2882,178 @@ class _UniqueItem {
 /// A named and unique identifiable item.
 class _NamedItem extends _UniqueItem {
   /// Creates a new [_NamedItem].
-  _NamedItem(
-    String identifier,
-    this.name,
-  ) : super(identifier);
+  _NamedItem(String identifier, String name)
+      // ignore: prefer_initializing_formals
+      : name = name,
+        super(identifier);
 
   /// Retrieves an existing item.
-  _NamedItem.existing(String identifier) : this(identifier, null);
+  _NamedItem.existing(String identifier)
+      : name = null,
+        super(identifier);
 
   /// The name of the item.
-  final String name;
+  final String? name;
+}
+
+/// A media item.
+class _MediaItem extends _UniqueItem {
+  /// Creates a new [_MediaItem].
+  _MediaItem(String identifier, {this.title, this.artist}) : super(identifier);
+
+  /// The title of the media item.
+  /// ```
+  /// // Defaults to:
+  /// null
+  /// ```
+  final String? title;
+
+  /// The artist of the media item.
+  /// ```
+  /// // Defaults to:
+  /// null
+  /// ```
+  final String? artist;
+}
+
+/// A video clip category.
+class VideoClipCategory extends _NamedItem {
+  /// Creates a new [VideoClipCategory].
+  VideoClipCategory(String identifier, String name,
+      {this.thumbnailURI, this.items})
+      : super(identifier, name);
+
+  /// A URI for the thumbnail of the category.
+  /// If `null` a placeholder image will be used.
+  final String? thumbnailURI;
+
+  /// Items of the category.
+  /// If `null` an empty category will be created.
+  /// ```
+  /// // Defaults to:
+  /// null
+  /// ```
+  final List<VideoClip>? items;
+
+  /// Converts a [VideoClipCategory] for JSON parsing.
+  Map<String, dynamic> _toJson() {
+    final map = Map<String, dynamic>.from({
+      "name": name,
+      "identifier": identifier,
+      "thumbnailURI": thumbnailURI,
+    });
+    final _items = items;
+    if (_items != null) {
+      map.addAll({"items": List<dynamic>.from(_items.map((e) => e._toJson()))});
+    }
+    return map..removeWhere((key, value) => value == null);
+  }
+}
+
+/// A video clip.
+class VideoClip extends _MediaItem {
+  /// Creates a new [VideoClip].
+  VideoClip(String identifier, this.videoURI,
+      {String? artist, String? title, this.thumbnailURI})
+      : super(identifier, title: title, artist: artist);
+
+  /// A URI for the thumbnail image of the video clip.
+  /// If `null` the thumbnail will be automatically generated from the
+  /// `videoURI`.
+  /// ```
+  /// // Defaults to:
+  /// null
+  /// ```
+  final String? thumbnailURI;
+
+  /// A URI for the video clip.
+  /// Remote resources are not optimized and therefore should be downloaded
+  /// in advance and then passed to the editor as local resources.
+  final String videoURI;
+
+  /// Converts a [VideoClip] for JSON parsing.
+  Map<String, dynamic> _toJson() => {
+        "thumbnailURI": thumbnailURI,
+        "videoURI": videoURI,
+        "identifier": identifier,
+        "artist": artist,
+        "title": title,
+      }..removeWhere((key, value) => value == null);
+}
+
+/// An audio clip category.
+class AudioClipCategory extends _NamedItem {
+  /// Creates a new [AudioClipCategory].
+  AudioClipCategory(String identifier, String name,
+      {this.thumbnailURI, this.items})
+      : super(identifier, name);
+
+  /// A URI for the thumbnail of the category.
+  /// If `null` a placeholder image will be used.
+  final String? thumbnailURI;
+
+  /// Items of the category.
+  /// If `null` an empty category will be created.
+  /// ```
+  /// // Defaults to:
+  /// null
+  /// ```
+  final List<AudioClip>? items;
+
+  /// Converts a [AudioClipCategory] for JSON parsing.
+  Map<String, dynamic> _toJson() {
+    final map = Map<String, dynamic>.from({
+      "name": name,
+      "identifier": identifier,
+      "thumbnailURI": thumbnailURI,
+    });
+
+    final _items = items;
+    if (_items != null) {
+      map.addAll({"items": List<dynamic>.from(_items.map((e) => e._toJson()))});
+    }
+    return map..removeWhere((key, value) => value == null);
+  }
+}
+
+/// An audio clip.
+class AudioClip extends _MediaItem {
+  /// Creates a new [AudioClip].
+  AudioClip(String identifier, this.audioURI,
+      {String? title, String? artist, this.thumbnailURI, this.duration})
+      : super(identifier, title: title, artist: artist);
+
+  /// The duration of the audio clip in seconds.
+  /// If `null` the duration will be automatically derived from the asset.
+  /// ```
+  /// // Defaults to:
+  /// null
+  /// ```
+  final double? duration;
+
+  /// A URI for the thumbnail image of the audio clip.
+  /// If `null` a placeholder image will be used.
+  /// ```
+  /// // Defaults to:
+  /// null
+  /// ```
+  final String? thumbnailURI;
+
+  /// A URI for the audio clip.
+  /// Audio clips from remote resources can be previewed in the editor but
+  /// their export will fail! Remote audio resources are currently supported
+  /// for debugging purposes only.
+  final String audioURI;
+
+  /// Converts a [AudioClip] for JSON parsing.
+  Map<String, dynamic> _toJson() => {
+        "thumbnailURI": thumbnailURI,
+        "audioURI": audioURI,
+        "duration": duration,
+        "identifier": identifier,
+        "artist": artist,
+        "title": title,
+      }..removeWhere((key, value) => value == null);
 }
 
 /// Maps the corresponding values to the enum.
@@ -2437,16 +3062,13 @@ class _EnumValues<T> {
   final Map<String, T> map;
 
   /// The reversed map.
-  Map<T, String> reverseMap;
+  Map<T, String>? reverseMap;
 
   /// Creates new [_EnumValues].
   _EnumValues(this.map);
 
   /// Gets the reverse.
   Map<T, String> get reverse {
-    if (reverseMap == null) {
-      reverseMap = map.map((k, v) => MapEntry(v, k));
-    }
-    return reverseMap;
+    return map.map((k, v) => MapEntry(v, k));
   }
 }

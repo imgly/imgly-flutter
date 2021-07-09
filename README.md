@@ -28,4 +28,4 @@ A commercial license is required for any app or service that has any form of mon
 
 ## Support and License
 
-Use our [service desk](https://support.photoeditorsdk.com) for bug reports or support requests. To request a commercial license, please use the [license request form](https://account.photoeditorsdk.com/pricing?utm_campaign=Projects&utm_source=Github&utm_medium=IMGLY&utm_content=Flutter) on our website.
+Use our [service desk](https://support.img.ly) for bug reports or support requests. To request a commercial license, please use the [license request form](https://img.ly/pricing?utm_campaign=Projects&utm_source=Github&utm_medium=IMGLY&utm_content=Flutter) on our website.
