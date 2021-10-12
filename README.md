@@ -23,7 +23,7 @@ A plugin containing the shared resources for [`photo_editor_sdk`](https://pub.de
 
 ## License Terms
 
-Make sure you have a [commercial license](https://account.photoeditorsdk.com/pricing?utm_campaign=Projects&utm_source=Github&utm_medium=IMGLY&utm_content=Flutter) for PhotoEditor SDK and/or VideoEditor SDK before releasing your app.
+Make sure you have a [commercial license](https://img.ly/pricing?utm_campaign=Projects&utm_source=Github&utm_medium=IMGLY&utm_content=Flutter) for PhotoEditor SDK and/or VideoEditor SDK before releasing your app.
 A commercial license is required for any app or service that has any form of monetization: This includes free apps with in-app purchases or ad supported applications. Please contact us if you want to purchase the commercial license.
 
 ## Support and License

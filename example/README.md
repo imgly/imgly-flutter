@@ -5,7 +5,7 @@ In order to see the SDK in use, please visit our standalone [photo_editor_sdk](h
 
 ## License Terms
 
-Make sure you have a [commercial license](https://account.photoeditorsdk.com/pricing?utm_campaign=Projects&utm_source=Github&utm_medium=PESDK&utm_content=Flutter) for PhotoEditor SDK before releasing your app.
+Make sure you have a [commercial license](https://img.ly/pricing?utm_campaign=Projects&utm_source=Github&utm_medium=PESDK&utm_content=Flutter) for PhotoEditor SDK before releasing your app.
 A commercial license is required for any app or service that has any form of monetization: This includes free apps with in-app purchases or ad supported applications. Please contact us if you want to purchase the commercial license.
 
 ## Support and License

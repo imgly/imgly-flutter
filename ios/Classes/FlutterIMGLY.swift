@@ -17,6 +17,9 @@ open class FlutterIMGLY: NSObject {
     /// A completion block.
     public typealias IMGLYCompletionBlock = () -> Void
 
+    /// A block to modify the `Configuration`.
+    public typealias IMGLYConfigurationBlock = (_ builder: ConfigurationBuilder) -> Void
+
     /// An alias of `URL` for clarification purposes.
     public typealias IMGLYExportURL = URL
 
@@ -35,6 +38,10 @@ open class FlutterIMGLY: NSObject {
     /// The `FlutterMethodChannel` used for the communication
     /// with the Flutter plugin.
     public static var methodeChannel: FlutterMethodChannel?
+
+    /// The `IMGLYConfigurationBlock` block to modify the `Configuration` before it is used to initialize a new `MediaEditViewController` instance.
+    /// The configuration defined in Dart is already applied to the provided `ConfigurationBuilder` object.
+    public static var configureWithBuilder: IMGLYConfigurationBlock?
 
     /// The `Error` thrown in case that the license is invalid.
     private var licenseError: NSError?
@@ -117,73 +124,68 @@ open class FlutterIMGLY: NSObject {
 
             // Retrieve the configuration.
             let assetCatalog = AssetCatalog.defaultItems
-            if let configurationDictionary = configurationData {
-                // Resolve the assets first.
-                guard let resolvedConfiguration = self.resolveAssets(for: configurationDictionary) else {
-                    self.result?(FlutterError(code: "Configuration invalid.", message: "The provided configuration is invalid.", details: nil))
-                    return
-                }
-
-                let parsedConfiguration = Configuration { (builder) in
-                    builder.assetCatalog = assetCatalog
-                    do {
-                        try builder.configure(from: resolvedConfiguration as [String : Any])
-                    } catch let error {
-                        self.result?(FlutterError(code: "Configuration could not be applied.", message: "The provided configuration is invalid. For futher information see the error attached in the details.", details: "ERROR:\(error.localizedDescription)"))
-                        return
-                    }
-                }
-
-                // Get the correct export settings.
-                guard let exportTypeValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.image.exportType", defaultValue: IMGLYConstants.kExportTypeFileURL) as? String,
-                      let exportFileValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.filename", defaultValue: "imgly-export/\(UUID().uuidString)") as? String,
-                      let serializationEnabledValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.serialization.enabled", defaultValue: false) as? Bool,
-                      let serializationTypeValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.serialization.exportType", defaultValue: IMGLYConstants.kExportTypeFileURL) as? String,
-                      let serializationFileValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.serialization.filename", defaultValue: "imgly-export/\(UUID().uuidString)") as? String,
-                      let serializationEmbedImageValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.serialization.embedSourceImage", defaultValue: false) as? Bool else {
-                    self.result?(FlutterError(code: "Configuration invalid.", message: "The configuration could not be parsed.", details: nil))
-                    return
-                }
-
-                // Convert the desired file urls into a readable URL.
-                let exportFileURL = self.retrieveExportURL(with: exportFileValue, uti: getUTI(parsedConfiguration))
-                let serializationFile = self.retrieveExportURL(with: serializationFileValue, uti: kUTTypeJSON)
-
-                // Assign the export settings.
-                self.exportType = exportTypeValue
-                self.exportFile = exportFileURL
-                self.serializationEnabled = serializationEnabledValue
-                self.serializationType = serializationTypeValue
-                self.serializationFile = serializationFile
-                self.serializationEmbedImage = serializationEmbedImageValue
-
-                // Check whether the export settings are valid.
-                if (self.exportType == nil) || (self.exportFile == nil && self.exportType == IMGLYConstants.kExportTypeFileURL) || (serializationFile == nil && self.serializationType == IMGLYConstants.kExportTypeFileURL) {
-                    self.result?(FlutterError(code: "Export settings invalid.", message: "The export settings are not valid. Please check them again.", details: nil))
-                }
-
-                // Update the export settings configuration
-                var updatedDictionary: IMGLYDictionary = resolvedConfiguration
-                if var exportDictionary = updatedDictionary.value(forKeyPath: "export", defaultValue: nil) as? IMGLYDictionary {
-                    exportDictionary.setValue(self.exportFile?.absoluteString ?? NSNull.self, forKeyPath: "filename")
-                    updatedDictionary.setValue(exportDictionary, forKeyPath: "export")
-                }
-
-                configuration = Configuration(builder: { (builder) in
-                    builder.assetCatalog = assetCatalog
-                    do {
-                        try builder.configure(from: updatedDictionary)
-                    } catch let error {
-                        self.result?(FlutterError(code: "Configuration could not be applied.", message: "The provided configuration is invalid. For futher information see the error attached in the details.", details: "ERROR:\(error.localizedDescription)"))
-                        return
-                    }
-                })
-            } else {
-                // Assign the default export settings.
-                self.exportType = IMGLYConstants.kExportTypeFileURL
-                self.exportFile = self.retrieveExportURL(with: "imgly-export/\(UUID().uuidString)", uti: getUTI(nil))
-                self.serializationEnabled = false
+            let configurationDictionary = configurationData ?? [String: Any]()
+            // Resolve the assets first.
+            guard let resolvedConfiguration = self.resolveAssets(for: configurationDictionary) else {
+                self.result?(FlutterError(code: "Configuration invalid.", message: "The provided configuration is invalid.", details: nil))
+                return
             }
+
+            let parsedConfiguration = Configuration { (builder) in
+                builder.assetCatalog = assetCatalog
+                do {
+                    try builder.configure(from: resolvedConfiguration as [String : Any])
+                } catch let error {
+                    self.result?(FlutterError(code: "Configuration could not be applied.", message: "The provided configuration is invalid. For futher information see the error attached in the details.", details: "ERROR:\(error.localizedDescription)"))
+                    return
+                }
+            }
+
+            // Get the correct export settings.
+            guard let exportTypeValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.image.exportType", defaultValue: IMGLYConstants.kExportTypeFileURL) as? String,
+                  let exportFileValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.filename", defaultValue: "imgly-export/\(UUID().uuidString)") as? String,
+                  let serializationEnabledValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.serialization.enabled", defaultValue: false) as? Bool,
+                  let serializationTypeValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.serialization.exportType", defaultValue: IMGLYConstants.kExportTypeFileURL) as? String,
+                  let serializationFileValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.serialization.filename", defaultValue: "imgly-export/\(UUID().uuidString)") as? String,
+                  let serializationEmbedImageValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.serialization.embedSourceImage", defaultValue: false) as? Bool else {
+                self.result?(FlutterError(code: "Configuration invalid.", message: "The configuration could not be parsed.", details: nil))
+                return
+            }
+
+            // Convert the desired file urls into a readable URL.
+            let exportFileURL = self.retrieveExportURL(with: exportFileValue, uti: getUTI(parsedConfiguration))
+            let serializationFile = self.retrieveExportURL(with: serializationFileValue, uti: kUTTypeJSON)
+
+            // Assign the export settings.
+            self.exportType = exportTypeValue
+            self.exportFile = exportFileURL
+            self.serializationEnabled = serializationEnabledValue
+            self.serializationType = serializationTypeValue
+            self.serializationFile = serializationFile
+            self.serializationEmbedImage = serializationEmbedImageValue
+
+            // Check whether the export settings are valid.
+            if (self.exportType == nil) || (self.exportFile == nil && self.exportType == IMGLYConstants.kExportTypeFileURL) || (serializationFile == nil && self.serializationType == IMGLYConstants.kExportTypeFileURL) {
+                self.result?(FlutterError(code: "Export settings invalid.", message: "The export settings are not valid. Please check them again.", details: nil))
+            }
+
+            // Update the export settings configuration
+            var updatedDictionary: IMGLYDictionary = resolvedConfiguration
+            if var exportDictionary = updatedDictionary.value(forKeyPath: "export", defaultValue: nil) as? IMGLYDictionary {
+                exportDictionary.setValue(self.exportFile?.absoluteString ?? NSNull.self, forKeyPath: "filename")
+                updatedDictionary.setValue(exportDictionary, forKeyPath: "export")
+            }
+
+            configuration = Configuration(builder: { (builder) in
+                builder.assetCatalog = assetCatalog
+                do {
+                    try builder.configure(from: updatedDictionary)
+                } catch let error {
+                    self.result?(FlutterError(code: "Configuration could not be applied.", message: "The provided configuration is invalid. For futher information see the error attached in the details.", details: "ERROR:\(error.localizedDescription)"))
+                    return
+                }
+                FlutterIMGLY.configureWithBuilder?(builder)
+            })
             // Finally present the editor itself.
             mediaEditViewController = createMediaEditViewController(configuration, serializationData)
 

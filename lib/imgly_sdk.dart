@@ -619,6 +619,7 @@ class ExportOptions {
     this.image,
     this.serialization,
     this.video,
+    this.forceExport
   });
 
   /// The filename for the exported data if the `exportType` is not
@@ -635,6 +636,12 @@ class ExportOptions {
   /// null
   /// ```
   final String? filename;
+
+  /// If enabled, the photo/video will be rendered and exported in the 
+  /// defined output format even if no changes have been applied. 
+  /// Otherwise, the input asset will be passed through and might 
+  /// not match the defined output format.
+  final bool? forceExport;
 
   /// Image export configuration if the editor supports image editing.
   final ImageOptions? image;
@@ -654,6 +661,7 @@ class ExportOptions {
         "image": image?._toJson(),
         "serialization": serialization?._toJson(),
         "video": video?._toJson(),
+        "force": forceExport
       }..removeWhere((key, value) => value == null);
 }
 
