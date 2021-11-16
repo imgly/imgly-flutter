@@ -20,7 +20,8 @@ class Configuration {
       this.tools,
       this.transform,
       this.audio,
-      this.composition});
+      this.composition,
+      this.trim});
 
   /// Configuration options for `Tool.adjustment`.
   final AdjustmentOptions? adjustment;
@@ -110,6 +111,9 @@ class Configuration {
   /// Configuration options for `Tool.transform`.
   final TransformOptions? transform;
 
+  /// Configuration options for `Tool.trim`.
+  final TrimOptions? trim;
+
   /// Converts a [Configuration] to a [Map].
   Map<String, dynamic> toJson() {
     final _canvasActions = mainCanvasActions;
@@ -139,6 +143,7 @@ class Configuration {
           ? null
           : List<dynamic>.from(_tools.map((x) => _toolValues.reverse[x])),
       "transform": transform?._toJson(),
+      "trim": trim?._toJson(),
     }..removeWhere((key, value) => value == null);
   }
 }
@@ -188,7 +193,7 @@ class CompositionOptions {
 
   /// Configuration options for trimming individual video clips of the
   /// video composition.
-  final TrimOptions? clipTrimOptions;
+  final ClipTrimOptions? clipTrimOptions;
 
   /// Converts a [CompositionOptions] for JSON parsing.
   Map<String, dynamic> _toJson() {
@@ -219,15 +224,89 @@ enum CompositionCanvasAction {
 final _compositionCanvasActionValues =
     _EnumValues({"playpause": CompositionCanvasAction.playPause});
 
+/// Configuration options for trimming individual video clips of the video
+/// composition.
+class ClipTrimOptions {
+  /// Creates new [ClipTrimOptions].
+  ClipTrimOptions({this.canvasActions});
+
+  /// Defines all allowed actions for the trim tool that are displayed as
+  /// overlay buttons on the canvas.
+  /// Only buttons for allowed actions are visible.
+  final List<ClipTrimCanvasAction>? canvasActions;
+
+  /// Converts a [ClipTrimOptions] for JSON parsing.
+  Map<String, dynamic> _toJson() {
+    final _canvasActions = canvasActions;
+
+    return {
+      "canvasActions": _canvasActions == null
+          ? null
+          : List<dynamic>.from(_canvasActions
+              .map((x) => _clipTrimCanvasActionValues.reverse[x])),
+    }..removeWhere((key, value) => value == null);
+  }
+}
+
+/// A canvas action for [ClipTrimOptions].
+enum ClipTrimCanvasAction {
+  /// Delete the video clip.
+  delete,
+
+  /// Play/pause the video playback.
+  playPause
+}
+
+/// The corresponding values to the [ClipTrimCanvasAction].
+final _clipTrimCanvasActionValues = _EnumValues({
+  "delete": ClipTrimCanvasAction.delete,
+  "playpause": ClipTrimCanvasAction.playPause
+});
+
 /// Configuration options for `Tool.trim`.
 class TrimOptions {
   /// Creates new [TrimOptions].
-  TrimOptions({this.canvasActions});
+  TrimOptions(
+      {this.canvasActions,
+      this.minimumDuration,
+      this.maximumDuration,
+      this.forceMode});
 
   /// Defines all allowed actions for the trim tool that are displayed as
   /// overlay buttons on the canvas.
   /// Only buttons for allowed actions are visible.
   final List<TrimCanvasAction>? canvasActions;
+
+  /// Enforces a minimum allowed duration in seconds for the edited video for
+  /// the trim and composition tool. The minimum allowed value is 0.5 seconds.
+  /// See [forceMode] for additional options.
+  /// ```
+  /// // Defaults to:
+  /// 0.5
+  /// ```
+  final double? minimumDuration;
+
+  /// Enforces a maximum allowed duration in seconds for the edited video for
+  /// the trim and composition tool if set to a value different from `null`.
+  /// See [forceMode] for additional options.
+  /// ```
+  /// // Defaults to:
+  /// null
+  /// ```
+  final double? maximumDuration;
+
+  /// With the force trim option, you're able to enforce a [minimumDuration]
+  /// and [maximumDuration] for a video composition in the composition tool
+  /// and/or a single video in the trim tool. Thus users will not be able to
+  /// export videos, which are not within the defined video duration limits.
+  /// This feature is implemented as part of the user interface only.
+  /// To be able to use this feature your subscription must include the trim
+  /// feature.
+  /// ```
+  /// // Defaults to:
+  /// ForceTrimMode.silent
+  /// ```
+  final ForceTrimMode? forceMode;
 
   /// Converts a [TrimOptions] for JSON parsing.
   Map<String, dynamic> _toJson() {
@@ -237,24 +316,70 @@ class TrimOptions {
       "canvasActions": _canvasActions == null
           ? null
           : List<dynamic>.from(
-              _canvasActions.map((x) => _trimCanvasActionValues.reverse[x]))
+              _canvasActions.map((x) => _trimCanvasActionValues.reverse[x])),
+      "minimumDuration": minimumDuration,
+      "maximumDuration": maximumDuration,
+      "forceMode": _forceTrimModeValues.reverse[forceMode]
     }..removeWhere((key, value) => value == null);
   }
 }
 
-/// A trim canvas action.
+/// A canvas action for [TrimOptions].
 enum TrimCanvasAction {
-  /// Delete the video clip.
-  delete,
-
   /// Play/pause the video playback.
   playPause
 }
 
 /// The corresponding values to the [TrimCanvasAction].
-final _trimCanvasActionValues = _EnumValues({
-  "delete": TrimCanvasAction.delete,
-  "playpause": TrimCanvasAction.playPause
+final _trimCanvasActionValues =
+    _EnumValues({"playpause": TrimCanvasAction.playPause});
+
+/// A force trim mode.
+enum ForceTrimMode {
+  /// Will always automatically present the composition tool or the trim tool
+  /// after opening the editor and force your users to change the length of
+  /// the video(s).
+  ///
+  /// The composition tool will only be used if it is included in your
+  /// subscription and if it is included in [Configuration.tools] or if both
+  /// the composition and trim tool are not included in [Configuration.tools].
+  /// Otherwise, the trim tool is used if it is included in your subscription.
+  always,
+
+  /// Will automatically present the composition or trim tool if needed.
+  /// Will only present:
+  /// - the composition tool, if your initial composition is longer than
+  ///   [TrimOptions.maximumDuration] or shorter than
+  ///   [TrimOptions.minimumDuration], or
+  /// - the trim tool, if your initial video is longer than
+  ///   [TrimOptions.maximumDuration]. If the video is shorter than
+  ///   [TrimOptions.minimumDuration] an alert
+  ///   is displayed as soon as the editor is opened and after dismissing the
+  ///   alert, the editor is closed.
+  ///
+  /// The composition tool will only be used if it is included in your
+  /// subscription and if it is included in [Configuration.tools]
+  /// or if both the composition and trim tool are not included in
+  /// [Configuration.tools]. Otherwise, the trim tool is used if it is included
+  /// in your subscription.
+  ifNeeded,
+
+  /// Will automatically trim the video to [TrimOptions.maximumDuration] without
+  /// opening any tool. If the length of the initially loaded video(s) is
+  /// shorter than [TrimOptions.minimumDuration] and the user has the option to add
+  /// more videos (because of composition), an alert will be shown when tapping
+  /// the export button and after dismissing the alert, the composition tool
+  /// will automatically open. If no additional videos can be added, an alert
+  /// is displayed as soon as the editor is opened and after dismissing the
+  /// alert, the editor is closed.
+  silent
+}
+
+/// The corresponding values to the [ForceTrimMode].
+final _forceTrimModeValues = _EnumValues({
+  "always": ForceTrimMode.always,
+  "ifneeded": ForceTrimMode.ifNeeded,
+  "silent": ForceTrimMode.silent
 });
 
 /// Configuration options for `Tool.audio`.
@@ -614,16 +739,15 @@ class ColorPalette {
 /// Export configuration options.
 class ExportOptions {
   /// Creates new [ExportOptions].
-  ExportOptions({
-    this.filename,
-    this.image,
-    this.serialization,
-    this.video,
-    this.forceExport
-  });
+  ExportOptions(
+      {this.filename,
+      this.image,
+      this.serialization,
+      this.video,
+      this.forceExport});
 
-  /// The filename for the exported data if the `exportType` is not
-  /// `ImageExportType.dataUrl`.
+  /// The filename for the exported data if the [ImageOptions.exportType] is not
+  /// [ImageExportType.dataUrl].
   /// The correct filename extension will be automatically added
   /// based on the selected export format. It can be an absolute path
   /// or file URL or a relative path.
@@ -637,9 +761,9 @@ class ExportOptions {
   /// ```
   final String? filename;
 
-  /// If enabled, the photo/video will be rendered and exported in the 
-  /// defined output format even if no changes have been applied. 
-  /// Otherwise, the input asset will be passed through and might 
+  /// If enabled, the photo/video will be rendered and exported in the
+  /// defined output format even if no changes have been applied.
+  /// Otherwise, the input asset will be passed through and might
   /// not match the defined output format.
   final bool? forceExport;
 
