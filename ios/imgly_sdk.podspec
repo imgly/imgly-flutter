@@ -21,7 +21,7 @@ The official base plugin for the photo_editor_sdk and video_editor_sdk Flutter p
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
   s.platform = :ios, '9.0'
-  s.dependency 'imglyKit', '~> 10.28'
+  s.dependency 'imglyKit', '~> 10.29'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }

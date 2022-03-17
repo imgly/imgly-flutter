@@ -68,9 +68,11 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
   }
 
   /** Called as soon as a permission request has been granted. */
+  @Deprecated("The plugin no longer requires to manage permissions for the SDK.")
   override fun permissionGranted() {}
 
   /** Called as soon as a permission request has been denied. */
+  @Deprecated("The plugin no longer requires to manage permissions for the SDK.")
   override fun permissionDenied() {}
 
   /** Called as soon as the plugin receives the result of the activity. */
@@ -110,7 +112,7 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
     MainThreadRunnable {
       EditorBuilder(currentActivity)
               .setSettingsList(settingsList)
-              .startActivityForResult(currentActivity, resultID, PermissionRequest.NEEDED_EDITOR_PERMISSIONS)
+              .startActivityForResult(currentActivity, resultID, arrayOfNulls(0))
     }()
   }
 
@@ -128,12 +130,15 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
           this.unlockWithLicense(it)
         } ?: run {
           result?.error("Invalid license.", "The license content can not be empty.", null)
+          result = null
         }
       } ?: run {
         result?.error("Invalid license.", "The license can not be found..", null)
+        result = null
       }
     } else {
       result?.error("Invalid license.", "The license can not be nil.", null)
+      result = null
     }
   }
 
@@ -249,6 +254,15 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
     val resolvedFilterCategories = this.resolveNestedCategories(source, filterCategoryKeyPath, filterCategoryResolvingKeyPaths, filterKeyPath, filterResolvingKeyPaths)
     if (resolvedFilterCategories != null) {
       IMGLYSetValue(source, filterCategoryKeyPath, resolvedFilterCategories)
+    }
+
+    // Resolve the watermark.
+    val watermarkKeyPath = "watermark"
+    val watermarkResolvingKeyPaths = listOf("watermarkURI")
+    val watermarkOptions = IMGLYGetValue(source, watermarkKeyPath) as? MutableMap<String, Any>
+    if (watermarkOptions != null) {
+      val resolvedWatermark = this.resolveNestedAssets(watermarkOptions, watermarkResolvingKeyPaths)
+      IMGLYSetValue(source, watermarkKeyPath, resolvedWatermark)
     }
     return source
   }

@@ -21,7 +21,8 @@ class Configuration {
       this.transform,
       this.audio,
       this.composition,
-      this.trim});
+      this.trim,
+      this.watermark});
 
   /// Configuration options for `Tool.adjustment`.
   final AdjustmentOptions? adjustment;
@@ -114,6 +115,9 @@ class Configuration {
   /// Configuration options for `Tool.trim`.
   final TrimOptions? trim;
 
+  /// Global watermark options.
+  final WatermarkOptions? watermark;
+
   /// Converts a [Configuration] to a [Map].
   Map<String, dynamic> toJson() {
     final _canvasActions = mainCanvasActions;
@@ -144,9 +148,86 @@ class Configuration {
           : List<dynamic>.from(_tools.map((x) => _toolValues.reverse[x])),
       "transform": transform?._toJson(),
       "trim": trim?._toJson(),
+      "watermark": watermark?._toJson(),
     }..removeWhere((key, value) => value == null);
   }
 }
+
+/// Global watermark options.
+class WatermarkOptions {
+  /// Creates new [WatermarkOptions].
+  WatermarkOptions(this.watermarkURI, {this.size, this.inset, this.alignment});
+
+  /// Input image for the watermark. No additional processing is performed on
+  /// the image. Transparency must be supported by the file itself.
+  /// If the watermark is the only editing operation to be performed,
+  /// [ExportOptions.forceExport] option must be enabled for the change to be
+  /// applied.
+  final String watermarkURI;
+
+  /// The relative size of the watermark.
+  /// This value is measured in relation to the smaller side of the transformed image/video that the user is editing
+  /// and the longer side of the watermark image.
+  /// Values outside (0.0, 1.0) will be clamped.
+  /// ```
+  /// // Defaults to:
+  /// 0.2
+  /// ```
+  final double? size;
+
+  /// The relative spacing between the edges of the image/video and the watermark.
+  /// This value is measured in relation to the smaller side of the transformed image/video that the user is editing.
+  /// Values outside (0.0, 0.5) will be clamped.
+  /// ```
+  /// // Defaults to:
+  /// 0.05
+  /// ```
+  final double? inset;
+
+  /// It defines the layout of the watermark inside the canvas.
+  /// ```
+  /// // Defaults to:
+  /// AlignmentMode.topRight
+  /// ```
+  final AlignmentMode? alignment;
+
+  /// Converts a [WatermarkOptions] for JSON parsing.
+  Map<String, dynamic> _toJson() {
+    return {
+      "watermarkURI": watermarkURI,
+      "size": size,
+      "inset": inset,
+      "alignment": _alignmentModeValues.reverse[alignment],
+    }..removeWhere((key, value) => value == null);
+  }
+}
+
+/// An alignment mode.
+enum AlignmentMode {
+  /// Center mode.
+  center,
+
+  /// Top-left mode.
+  topLeft,
+
+  /// Top-right mode.
+  topRight,
+
+  /// Bottom-left mode.
+  bottomLeft,
+
+  /// Bottom-right mode.
+  bottomRight
+}
+
+/// The corresponding values to the [AlignmentMode].
+final _alignmentModeValues = _EnumValues({
+  "center": AlignmentMode.center,
+  "top-left": AlignmentMode.topLeft,
+  "top-right": AlignmentMode.topRight,
+  "bottom-left": AlignmentMode.bottomLeft,
+  "bottom-right": AlignmentMode.bottomRight
+});
 
 /// Configuration options for `Tool.composition`.
 class CompositionOptions {
@@ -366,12 +447,12 @@ enum ForceTrimMode {
 
   /// Will automatically trim the video to [TrimOptions.maximumDuration] without
   /// opening any tool. If the length of the initially loaded video(s) is
-  /// shorter than [TrimOptions.minimumDuration] and the user has the option to add
-  /// more videos (because of composition), an alert will be shown when tapping
-  /// the export button and after dismissing the alert, the composition tool
-  /// will automatically open. If no additional videos can be added, an alert
-  /// is displayed as soon as the editor is opened and after dismissing the
-  /// alert, the editor is closed.
+  /// shorter than [TrimOptions.minimumDuration] and the user has the option to
+  /// add more videos (because of composition), an alert will be shown when
+  /// tapping the export button and after dismissing the alert, the composition
+  /// tool will automatically open. If no additional videos can be added, an
+  /// alert is displayed as soon as the editor is opened and after dismissing
+  /// the alert, the editor is closed.
   silent
 }
 
@@ -755,6 +836,16 @@ class ExportOptions {
   /// system directory and overwritten
   /// if the corresponding file already exists. If the value is `null`
   /// an new temporary file will be created for every export.
+  ///
+  /// Please make sure that the provided `filename` is valid for the different
+  /// devices and that your application has the corresponding access rights to
+  /// write to the desired location. For Android, you will want to make sure to
+  /// set this inside one of the directories conforming to scoped storage:
+  /// - DCIM/
+  /// - Pictures/
+  ///
+  /// For Videos you can additionally use:
+  /// - Movies/
   /// ```
   /// // Defaults to:
   /// null
@@ -899,15 +990,15 @@ class SerializationOptions {
   /// ```
   final SerializationExportType? exportType;
 
-  /// The filename for the exported serialization data if the `exportType` is
+  /// The file URI for the exported serialization data if the `exportType` is
   /// `SerializationExportType.fileUrl`.
   /// The filename extension for JSON will be automatically added.
-  /// It can be an absolute path or file URL or a relative path.
-  /// If some relative path is chosen it will be created in a temporary system
-  /// directory and overwritten if the corresponding file already exists.
-  /// If the value is `null` an new temporary file will be
-  /// created for every export based on the filename for the exported image or
-  /// video data.
+  /// If the value is `null` an new temporary file will be created for every
+  /// export based on the filename for the exported image or video data.
+  ///
+  /// Please make sure that the provided `filename` is a valid file URI for the
+  /// different devices and that your application has the corresponding access
+  /// rights to write to the desired location.
   /// ```
   /// // Defaults to:
   /// null
@@ -2155,14 +2246,14 @@ final _tintModeValues = _EnumValues({
 /// Configuration options for `Tool.text`.
 class TextOptions {
   /// Creates new [TextOptions].
-  TextOptions({
-    this.actions,
-    this.backgroundColors,
-    this.canvasActions,
-    this.defaultTextColor,
-    this.fonts,
-    this.textColors,
-  });
+  TextOptions(
+      {this.actions,
+      this.backgroundColors,
+      this.canvasActions,
+      this.defaultTextColor,
+      this.fonts,
+      this.textColors,
+      this.allowEmojis});
 
   /// Defines all allowed actions for the text tool menu. Only buttons for
   /// allowed actions are visible and shown in the given order.
@@ -2279,6 +2370,17 @@ class TextOptions {
   /// ```
   final ColorPalette? textColors;
 
+  /// Whether the user can use emojis as text input.
+  /// Emojis are not cross-platform compatible.
+  /// If you use the serialization feature to share edits
+  /// across different platforms emojis will be rendered with
+  /// the system's local set of emojis and will appear differently.
+  /// ```
+  /// // Defaults to:
+  /// false
+  /// ```
+  final bool? allowEmojis;
+
   /// Converts the [TextOptions] for JSON parsing.
   Map<String, dynamic> _toJson() {
     final _actions = actions;
@@ -2301,6 +2403,7 @@ class TextOptions {
           ? null
           : List<dynamic>.from(_fonts.map((x) => x._toJson())),
       "textColors": textColors?._toJson(),
+      "allowEmojis": allowEmojis
     }..removeWhere((key, value) => value == null);
   }
 }
@@ -3172,9 +3275,8 @@ class AudioClip extends _MediaItem {
   final String? thumbnailURI;
 
   /// A URI for the audio clip.
-  /// Audio clips from remote resources can be previewed in the editor but
-  /// their export will fail! Remote audio resources are currently supported
-  /// for debugging purposes only.
+  /// Remote resources are not optimized and therefore should be downloaded
+  /// in advance and then passed to the editor as local resources.
   final String audioURI;
 
   /// Converts a [AudioClip] for JSON parsing.

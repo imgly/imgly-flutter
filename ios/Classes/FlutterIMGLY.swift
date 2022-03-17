@@ -111,6 +111,7 @@ open class FlutterIMGLY: NSObject {
                 try serializationData = JSONSerialization.data(withJSONObject: serializationOriginalData, options: JSONSerialization.WritingOptions.init(rawValue: 0))
             } catch let error {
                 self.result?(FlutterError(code: "Invalid serialization", message: "The serialization could not be read. For more information look into the details.", details: error.localizedDescription))
+                self.result = nil
             }
         }
 
@@ -119,6 +120,7 @@ open class FlutterIMGLY: NSObject {
             // Check if the license could be validated.
             if let error_ = self.licenseError {
                 self.result?(FlutterError(code: "License validation error.", message: "The license could not be validated.", details: error_.localizedDescription))
+                self.result = nil
                 return
             }
 
@@ -128,6 +130,7 @@ open class FlutterIMGLY: NSObject {
             // Resolve the assets first.
             guard let resolvedConfiguration = self.resolveAssets(for: configurationDictionary) else {
                 self.result?(FlutterError(code: "Configuration invalid.", message: "The provided configuration is invalid.", details: nil))
+                self.result = nil
                 return
             }
 
@@ -137,6 +140,7 @@ open class FlutterIMGLY: NSObject {
                     try builder.configure(from: resolvedConfiguration as [String : Any])
                 } catch let error {
                     self.result?(FlutterError(code: "Configuration could not be applied.", message: "The provided configuration is invalid. For futher information see the error attached in the details.", details: "ERROR:\(error.localizedDescription)"))
+                    self.result = nil
                     return
                 }
             }
@@ -149,6 +153,7 @@ open class FlutterIMGLY: NSObject {
                   let serializationFileValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.serialization.filename", defaultValue: "imgly-export/\(UUID().uuidString)") as? String,
                   let serializationEmbedImageValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.serialization.embedSourceImage", defaultValue: false) as? Bool else {
                 self.result?(FlutterError(code: "Configuration invalid.", message: "The configuration could not be parsed.", details: nil))
+                self.result = nil
                 return
             }
 
@@ -167,6 +172,8 @@ open class FlutterIMGLY: NSObject {
             // Check whether the export settings are valid.
             if (self.exportType == nil) || (self.exportFile == nil && self.exportType == IMGLYConstants.kExportTypeFileURL) || (serializationFile == nil && self.serializationType == IMGLYConstants.kExportTypeFileURL) {
                 self.result?(FlutterError(code: "Export settings invalid.", message: "The export settings are not valid. Please check them again.", details: nil))
+                self.result = nil
+                return
             }
 
             // Update the export settings configuration
@@ -182,6 +189,7 @@ open class FlutterIMGLY: NSObject {
                     try builder.configure(from: updatedDictionary)
                 } catch let error {
                     self.result?(FlutterError(code: "Configuration could not be applied.", message: "The provided configuration is invalid. For futher information see the error attached in the details.", details: "ERROR:\(error.localizedDescription)"))
+                    self.result = nil
                     return
                 }
                 FlutterIMGLY.configureWithBuilder?(builder)
@@ -193,6 +201,7 @@ open class FlutterIMGLY: NSObject {
                 UIApplication.shared.keyWindow?.rootViewController?.present(controller, animated: true, completion: nil)
             } else {
                 self.result?(FlutterError(code: "Editor could not be initialized.", message: nil, details: nil))
+                self.result = nil
             }
         }
     }
@@ -418,6 +427,14 @@ extension FlutterIMGLY {
             resolvedConfiguration.setValue(filterCategories, forKeyPath: filterCategoryKeyPath)
         }
 
+        // Watermark
+        let watermarkKeyPath = "watermark"
+        let watermarkResolvingKeyPaths = ["watermarkURI"]
+
+        if let watermarkOptions = resolvedConfiguration.value(forKeyPath: watermarkKeyPath, defaultValue: nil) as? IMGLYDictionary {
+            let resolvedWatermark = self.resolveNestedAssets(from: watermarkOptions, with: watermarkResolvingKeyPaths)
+            resolvedConfiguration.setValue(resolvedWatermark, forKeyPath: watermarkKeyPath)
+        }
         return resolvedConfiguration
     }
 
