@@ -39,9 +39,6 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
   /** The currently used `Configuration`. */
   var currentConfig: Configuration? = null
 
-  /** The currently used *SettingsList*. */
-  var currentSettingsList: SettingsList? = null
-
   /** The currently used *FlutterPluginBinding*. */
   private var binding: FlutterPlugin.FlutterPluginBinding? = null
 
@@ -113,6 +110,7 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
       EditorBuilder(currentActivity)
               .setSettingsList(settingsList)
               .startActivityForResult(currentActivity, resultID, arrayOfNulls(0))
+      settingsList.release()
     }()
   }
 
