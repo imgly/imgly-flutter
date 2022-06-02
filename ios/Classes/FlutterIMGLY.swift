@@ -183,6 +183,8 @@ open class FlutterIMGLY: NSObject {
                 updatedDictionary.setValue(exportDictionary, forKeyPath: "export")
             }
 
+            let toolbarMode = updatedDictionary.value(forKeyPath: "toolbarMode", defaultValue: nil) as? String
+
             configuration = Configuration(builder: { (builder) in
                 builder.assetCatalog = assetCatalog
                 do {
@@ -192,17 +194,151 @@ open class FlutterIMGLY: NSObject {
                     self.result = nil
                     return
                 }
+                if toolbarMode == "top" {
+                    self.configureToolbar(builder)
+                }
                 FlutterIMGLY.configureWithBuilder?(builder)
             })
             // Finally present the editor itself.
             mediaEditViewController = createMediaEditViewController(configuration, serializationData)
 
             if let controller = mediaEditViewController {
-                UIApplication.shared.keyWindow?.rootViewController?.present(controller, animated: true, completion: nil)
+                if toolbarMode == "top" {
+                    let navigationController = UINavigationController(rootViewController: controller)
+                    navigationController.modalPresentationStyle = .fullScreen
+
+                    if #available(iOS 13.0, *) {
+                        let appearance = UINavigationBarAppearance()
+                        appearance.configureWithOpaqueBackground()
+                        appearance.backgroundColor = configuration?.theme.toolbarBackgroundColor
+                        appearance.shadowColor = configuration?.theme.toolbarBackgroundColor
+                        navigationController.navigationBar.standardAppearance = appearance
+                        navigationController.navigationBar.scrollEdgeAppearance = appearance
+                        navigationController.navigationBar.compactAppearance = appearance
+                        if #available(iOS 15.0, *) {
+                            navigationController.navigationBar.compactScrollEdgeAppearance = appearance
+                        }
+                    } else {
+                        navigationController.navigationBar.barTintColor = configuration?.theme.toolbarBackgroundColor
+                        navigationController.navigationBar.shadowImage = UIImage()
+                    }
+
+                    UIApplication.shared.keyWindow?.rootViewController?.present(navigationController, animated: true, completion: nil)
+                } else {
+                    UIApplication.shared.keyWindow?.rootViewController?.present(controller, animated: true, completion: nil)
+                }
             } else {
                 self.result?(FlutterError(code: "Editor could not be initialized.", message: nil, details: nil))
                 self.result = nil
             }
+        }
+    }
+
+    private func configureToolbar(_ builder: ConfigurationBuilder) {
+        let toolbarButtonClosure: (ImglyKit.Button) -> Void = { button in
+            button.tintColor = builder.theme.primaryColor
+        }
+
+        // Configure `VideoEditViewController`.
+        builder.configureVideoEditViewController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+
+        // Configure `PhotoEditViewController`.
+        builder.configurePhotoEditViewController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+
+        // Configure tools.
+        builder.configureTransformToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureCompositionToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureAudioToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureAudioClipToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureVideoClipToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureFilterToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureAdjustToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureFocusToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureStickerToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureStickerColorToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureStickerOptionsToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureTextToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureTextOptionsToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureTextFontToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureTextColorToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureTextDesignToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureTextDesignOptionsToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureOverlayToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureFrameToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureFrameOptionsToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureBrushToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureBrushColorToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
         }
     }
 

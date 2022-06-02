@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:ui' as dart_ui;
+
 /// Configuration options and asset definitions for image and
 /// video editing tasks.
 class Configuration {
@@ -22,7 +25,9 @@ class Configuration {
       this.audio,
       this.composition,
       this.trim,
-      this.watermark});
+      this.watermark,
+      this.theme,
+      this.toolbarMode});
 
   /// Configuration options for `Tool.adjustment`.
   final AdjustmentOptions? adjustment;
@@ -118,12 +123,26 @@ class Configuration {
   /// Global watermark options.
   final WatermarkOptions? watermark;
 
+  /// Configuration options for the [Theme].
+  final ThemeOptions? theme;
+
+  /// The [ToolbarMode] determining where the toolbar is placed.
+  ///
+  /// This runtime property is only supported on iOS. In order to change
+  /// the toolbar position on Android, please refer to our documentation:
+  /// https://img.ly/docs/pesdk/android/customization/themes/
+  /// ```
+  /// // Defaults to:
+  /// ToolbarMode.bottom
+  /// ```
+  final ToolbarMode? toolbarMode;
+
   /// Converts a [Configuration] to a [Map].
   Map<String, dynamic> toJson() {
     final _canvasActions = mainCanvasActions;
     final _tools = tools;
 
-    return {
+    final jsonObject = {
       "adjustment": adjustment?._toJson(),
       "audio": audio?._toJson(),
       "brush": brush?._toJson(),
@@ -149,9 +168,165 @@ class Configuration {
       "transform": transform?._toJson(),
       "trim": trim?._toJson(),
       "watermark": watermark?._toJson(),
-    }..removeWhere((key, value) => value == null);
+      "theme": theme?.theme.identifier,
+      "toolbarMode":
+          toolbarMode == null ? null : _toolbarModeValues[toolbarMode]
+    };
+
+    if (theme != null) {
+      jsonObject.addAll({
+        "custom": {"themes": theme?._toJson()}
+          ..removeWhere((key, value) => value == null)
+      });
+    }
+    return jsonObject..removeWhere((key, value) => value == null);
   }
 }
+
+/// Configuration options for the [Theme] of the editor.
+///
+/// Creating custom themes and modifying exsiting themes for Android requires
+/// to create the corresponding styles in XML files first. For instructions,
+/// please refer to our documentation:
+/// https://img.ly/docs/pesdk/android/customization/themes/
+class ThemeOptions {
+  /// Creates a new instance.
+  /// The given [theme] will be used to style the editor.
+  ThemeOptions(this.theme);
+
+  /// The active theme that should be used to style the
+  /// user interface.
+  final Theme theme;
+
+  /// Converts a [ThemeOptions] for JSON parsing.
+  Map<String, dynamic>? _toJson() {
+    return [theme]
+        .asMap()
+        .map((key, value) => MapEntry(value.identifier, value._toJson()));
+  }
+}
+
+/// Determines where the toolbar should be placed.
+enum ToolbarMode {
+  /// Positions the toolbar at the top.
+  top,
+
+  /// Positions the toolbar at the bottom.
+  bottom
+}
+
+/// The corresponding values to the [ToolbarMode].
+Map<ToolbarMode, String> _toolbarModeValues = {
+  ToolbarMode.top: "top",
+  ToolbarMode.bottom: "bottom"
+};
+
+/// A [Theme] defines the styling for the user interface.
+///
+/// Creating custom themes and modifying exsiting themes for Android requires
+/// to create the corresponding styles within XML files in the
+/// `android/app/src/main/res/values` folder first. For instructions, please
+/// refer to our documentation:
+/// https://img.ly/docs/pesdk/android/customization/themes/
+class Theme {
+  /// Creates a custom [Theme].
+  ///
+  /// **For iOS**, you can specify a custom [tintColor], [primaryColor],
+  /// [backgroundColor], [menuBackgroundColor] and [toolbarBackgroundColor].
+  /// **For Android**, you need to create XML files in
+  /// `android/app/src/main/res/values` declaring a custom style and then pass
+  /// the [identifier] of the style.
+  /// Please do not use `light`, `dark` or `dynamic` for the [identifier] as
+  /// these identifiers are already assigned by the SDK.
+  Theme(this.identifier,
+      {this.tintColor,
+      this.primaryColor,
+      this.backgroundColor,
+      this.menuBackgroundColor,
+      this.toolbarBackgroundColor});
+
+  /// Creates a custom [Theme] from a given [existingTheme].
+  ///
+  /// **For iOS**, the [existingTheme] can be overridden by speciyfing custom
+  /// values for the colors.
+  Theme.existing(ExistingTheme existingTheme,
+      {this.tintColor,
+      this.primaryColor,
+      this.backgroundColor,
+      this.menuBackgroundColor,
+      this.toolbarBackgroundColor})
+      : identifier = _existingThemes[existingTheme] ?? "dark";
+
+  /// The identifier of the theme.
+  final String identifier;
+
+  /// The highlight tint color, e.g., used for the outline of selected menu
+  /// items, the sliders' thumb outline and filled track, and selected fonts
+  /// in the editor.
+  /// If `null` the default system's `tintColor` is used.
+  final dart_ui.Color? tintColor;
+
+  /// The primary tint color used for texts, buttons, icons, and control
+  /// elements with static background colors in the editor.
+  /// ```
+  /// // Defaults to:
+  /// Colors.white
+  /// ```
+  final dart_ui.Color? primaryColor;
+
+  /// The background color used for the background of the canvas in the editor.
+  /// ```
+  /// // Defaults to:
+  /// Colors.black
+  /// ```
+  final dart_ui.Color? backgroundColor;
+
+  /// The background color of the menu and accesory controls above the menu
+  /// in the editor.
+  /// ```
+  /// // Defaults to:
+  /// Color(0xff1c1c1c)
+  /// ```
+  final dart_ui.Color? menuBackgroundColor;
+
+  /// The background color of the toolbar that hosts the title of the active
+  /// tool, the discard, and the apply button in the editor.
+  /// ```
+  /// // Defaults to:
+  /// Color(0xff212121)
+  /// ```
+  final dart_ui.Color? toolbarBackgroundColor;
+
+  /// Converts a [Theme] for JSON parsing.
+  Map<String, dynamic> _toJson() => {
+        "tint": tintColor?.value,
+        "primary": primaryColor?.value,
+        "background": backgroundColor?.value,
+        "menuBackground": menuBackgroundColor?.value,
+        "toolbarBackground": toolbarBackgroundColor?.value
+      }..removeWhere((key, value) => value == null);
+}
+
+/// An existing theme that is shipped with the SDK.
+enum ExistingTheme {
+  /// The dark theme.
+  dark,
+
+  /// The light theme.
+  light,
+
+  /// A theme that switches dynamically between the light and the dark theme
+  /// based on the user interface state of the device. This [ExistingTheme] is
+  /// only supported on iOS.
+  dynamic
+}
+
+/// The corresponding values to the [ExistingTheme].
+Map<ExistingTheme, String> _existingThemes = {
+  ExistingTheme.dark: "dark",
+  ExistingTheme.light: "light",
+  ExistingTheme.dynamic: "dynamic",
+};
 
 /// Global watermark options.
 class WatermarkOptions {
@@ -2950,8 +3125,60 @@ abstract class StickerCategory extends _NamedItem {
           {List<Sticker>? items}) =>
       CustomStickerCategory(identifier, name, thumbnailUri, items: items);
 
+  /// Creates a new [ExistingStickerProviderCategory] for GIPHY.
+  factory StickerCategory.giphy(GiphyStickerProvider provider) =>
+      ExistingStickerProviderCategory.giphy(provider);
+
   /// Converts the [StickerCategory] for JSON parsing.
   Map<String, dynamic> _toJson() => {"identifier": identifier};
+}
+
+/// An existing sticker provider category.
+class ExistingStickerProviderCategory extends StickerCategory {
+  /// Creates a new instance for the GIPHY [provider].
+  ExistingStickerProviderCategory.giphy(GiphyStickerProvider provider)
+      : _providerMap = provider._toJson(),
+        super._existing("imgly_sticker_category_giphy");
+
+  final Map<String, dynamic> _providerMap;
+
+  @override
+  Map<String, dynamic> _toJson() {
+    final map = super._toJson();
+    map.addAll({"provider": _providerMap});
+    return map;
+  }
+}
+
+/// A GIPHY sticker provider.
+class GiphyStickerProvider {
+  /// Creates a new instance.
+  GiphyStickerProvider(this.apiKey, {this.language, this.rating});
+
+  /// The key used to authorize API requests, obtained from GIPHY.
+  final String apiKey;
+
+  /// The default language for regional content in 2-letter ISO 639-1 language
+  /// code. If `null` the language setting of the current locale is used.
+  /// ```
+  /// // Defaults to:
+  /// null
+  /// ```
+  final String? language;
+
+  /// The audience category used for content filtering. Available values
+  /// are `"g"`, `"pg"`, `"pg-13"`, `"r"`.
+  /// ```
+  /// // Defaults to:
+  /// "g"
+  /// ```
+  final String? rating;
+
+  Map<String, dynamic> _toJson() => {
+        "apiKey": apiKey,
+        "language": language,
+        "rating": rating,
+      }..removeWhere((key, value) => value == null);
 }
 
 /// A existing sticker category.

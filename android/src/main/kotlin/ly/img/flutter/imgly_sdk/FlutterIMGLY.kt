@@ -2,14 +2,18 @@ package ly.img.flutter.imgly_sdk
 
 import android.app.Activity
 import android.content.Intent
+import android.util.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
+import ly.img.android.pesdk.backend.decoder.ImageSource
 import ly.img.android.pesdk.backend.model.state.manager.SettingsList
+import ly.img.android.pesdk.backend.model.state.manager.configure
 import ly.img.android.pesdk.ui.activity.EditorBuilder
+import ly.img.android.pesdk.ui.model.state.UiConfigTheme
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -56,12 +60,9 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
   override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) { }
 
   /** Called as soon as the plugin receives the result for a permission request. */
-  override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray?): Boolean {
-    if (grantResults != null) {
-      PermissionRequest.onRequestPermissionsResult(requestCode, permissions, grantResults)
-      return true
-    }
-    return false
+  override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray): Boolean {
+    PermissionRequest.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    return true
   }
 
   /** Called as soon as a permission request has been granted. */
@@ -159,6 +160,37 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
       skipIfNotExists {
         IMGLYFileReader(settingsList).also {
           it.readJson(serialization, readImage)
+        }
+      }
+    }
+  }
+
+  /**
+   * Apply a theme to the editor.
+   *
+   * @param settingsList The *SettingsList* to apply the theme to.
+   * @param theme The identifier of the theme.
+   */
+  fun applyTheme(settingsList: SettingsList, theme: String?) {
+    if (theme != null) {
+      settingsList.configure<UiConfigTheme> { loadSettings ->
+        val themeIdentifier = when (theme) {
+          "light" -> {
+            R.style.Theme_Imgly_Light
+          }
+          "dark" -> {
+            R.style.Theme_Imgly
+          }
+          else -> {
+            ImageSource.getResources().getIdentifier(theme, "style", currentActivity?.packageName)
+          }
+        }
+        themeIdentifier.also {
+          if (themeIdentifier != 0) {
+            loadSettings.theme = it
+          } else {
+            Log.e("IMG.LY SDK", "No theme found for the specified identifier: ${theme}. Skipping application of custom theme and falling back to the default theme. For further instructions please have a look into the API docs: https://pub.dev/documentation/imgly_sdk/latest/imgly_sdk/Theme-class.html")
+          }
         }
       }
     }
