@@ -3,7 +3,7 @@ import UIKit
 import ImglyKit
 import MobileCoreServices
 
-@available (iOS 9.0, *)
+@available(iOS 13.0, *)
 open class FlutterIMGLY: NSObject {
 
     // MARK: - Typealias
@@ -398,7 +398,7 @@ open class FlutterIMGLY: NSObject {
 }
 
 /// Extension for converting wrappers.
-@available(iOS 9.0, *)
+@available(iOS 13.0, *)
 extension FlutterIMGLY {
     /// Retrieves the value for the given key path.
     /// - Parameter dictionary: The dictionary to get the values from.
@@ -462,7 +462,7 @@ extension FlutterIMGLY {
 }
 
 /// Extension responsible for resolving the assets of a `Configuration`.
-@available(iOS 9.0, *)
+@available(iOS 13.0, *)
 extension FlutterIMGLY {
     /// Wraps around the Flutter source in order to resolve
     /// nested assets from within the `Configuration`.

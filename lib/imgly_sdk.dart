@@ -1761,7 +1761,12 @@ enum MainCanvasAction {
   redo,
 
   /// Undo the action(s).
-  undo
+  undo,
+
+  /// Remove the background of the input image. This action is only shown when
+  /// a person could be detected. This feature is only supported on devices
+  /// running iOS 15+.
+  removeBackground,
 }
 
 /// The corresponding values to the [MainCanvasAction].
@@ -1769,7 +1774,8 @@ final _mainCanvasActionValues = _EnumValues({
   "redo": MainCanvasAction.redo,
   "undo": MainCanvasAction.undo,
   "playpause": MainCanvasAction.playPause,
-  "soundonoff": MainCanvasAction.soundOnOff
+  "soundonoff": MainCanvasAction.soundOnOff,
+  "removebackground": MainCanvasAction.removeBackground,
 });
 
 /// Configuration options for `Tool.overlay`.
@@ -2132,7 +2138,12 @@ class StickerOptions {
   /// allowed actions are visible and shown in the given order.
   /// ```
   /// // Defaults to:
-  /// [StickerAction.replace, StickerAction.opacity, StickerAction.color]
+  /// [
+  ///   StickerAction.replace,
+  ///   StickerAction.opacity,
+  ///   StickerAction.color,
+  ///   StickerAction.removeBackground
+  /// ]
   /// ```
   final List<StickerAction>? actions;
 
@@ -2354,7 +2365,12 @@ enum StickerAction {
   saturation,
 
   /// Straighten the sticker.
-  straighten
+  straighten,
+
+  /// Remove the background on personal and external (non-animated)
+  /// stickers. This option is only shown when a person could be detected and is
+  /// only supported on devices running iOS 15+.
+  removeBackground,
 }
 
 /// The corresponding values to the [StickerAction].
@@ -2363,6 +2379,7 @@ final _stickerActionValues = _EnumValues({
   "color": StickerAction.color,
   "contrast": StickerAction.contrast,
   "opacity": StickerAction.opacity,
+  "removebackground": StickerAction.removeBackground,
   "replace": StickerAction.replace,
   "saturation": StickerAction.saturation,
   "straighten": StickerAction.straighten
