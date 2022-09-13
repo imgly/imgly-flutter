@@ -2371,6 +2371,10 @@ enum StickerAction {
   /// stickers. This option is only shown when a person could be detected and is
   /// only supported on devices running iOS 15+.
   removeBackground,
+
+  /// Change the duration of the sticker within the video.
+  /// This action is only shown when editing videos.
+  duration
 }
 
 /// The corresponding values to the [StickerAction].
@@ -2382,7 +2386,8 @@ final _stickerActionValues = _EnumValues({
   "removebackground": StickerAction.removeBackground,
   "replace": StickerAction.replace,
   "saturation": StickerAction.saturation,
-  "straighten": StickerAction.straighten
+  "straighten": StickerAction.straighten,
+  "duration": StickerAction.duration
 });
 
 /// A sticker canvas action.
@@ -2612,7 +2617,11 @@ enum TextAction {
   color,
 
   /// Change the font.
-  font
+  font,
+
+  /// Change the duration of the text within the video.
+  /// This action is only shown when editing videos.
+  duration
 }
 
 /// The corresponding values for the [TextAction].
@@ -2620,7 +2629,8 @@ final _textActionValues = _EnumValues({
   "alignment": TextAction.alignment,
   "backgroundcolor": TextAction.backgroundColor,
   "color": TextAction.color,
-  "font": TextAction.font
+  "font": TextAction.font,
+  "duration": TextAction.duration
 });
 
 /// A font.
