@@ -68,6 +68,9 @@ open class FlutterIMGLY: NSObject {
     /// within the serialization.
     public var serializationEmbedImage: Bool?
 
+    /// Indicates whether the VideoEditor SDK should export the individual video segments.
+    public var serializeVideoSegments: Bool = false
+
     /// IMGLY constants for the plugin use.
     public struct IMGLYConstants {
         public static let kErrorUnableToUnlock = "E_UNABLE_TO_UNLOCK"
@@ -151,7 +154,8 @@ open class FlutterIMGLY: NSObject {
                   let serializationEnabledValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.serialization.enabled", defaultValue: false) as? Bool,
                   let serializationTypeValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.serialization.exportType", defaultValue: IMGLYConstants.kExportTypeFileURL) as? String,
                   let serializationFileValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.serialization.filename", defaultValue: "imgly-export/\(UUID().uuidString)") as? String,
-                  let serializationEmbedImageValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.serialization.embedSourceImage", defaultValue: false) as? Bool else {
+                  let serializationEmbedImageValue = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.serialization.embedSourceImage", defaultValue: false) as? Bool,
+                  let serializeVideoSegments = self.IMGLYDictionary(with: resolvedConfiguration, valueForKeyPath: "export.video.segments", defaultValue: false) as? Bool else {
                 self.result?(FlutterError(code: "Configuration invalid.", message: "The configuration could not be parsed.", details: nil))
                 self.result = nil
                 return
@@ -168,6 +172,7 @@ open class FlutterIMGLY: NSObject {
             self.serializationType = serializationTypeValue
             self.serializationFile = serializationFile
             self.serializationEmbedImage = serializationEmbedImageValue
+            self.serializeVideoSegments = serializeVideoSegments
 
             // Check whether the export settings are valid.
             if (self.exportType == nil) || (self.exportFile == nil && self.exportType == IMGLYConstants.kExportTypeFileURL) || (serializationFile == nil && self.serializationType == IMGLYConstants.kExportTypeFileURL) {
@@ -207,20 +212,15 @@ open class FlutterIMGLY: NSObject {
                     let navigationController = UINavigationController(rootViewController: controller)
                     navigationController.modalPresentationStyle = .fullScreen
 
-                    if #available(iOS 13.0, *) {
-                        let appearance = UINavigationBarAppearance()
-                        appearance.configureWithOpaqueBackground()
-                        appearance.backgroundColor = configuration?.theme.toolbarBackgroundColor
-                        appearance.shadowColor = configuration?.theme.toolbarBackgroundColor
-                        navigationController.navigationBar.standardAppearance = appearance
-                        navigationController.navigationBar.scrollEdgeAppearance = appearance
-                        navigationController.navigationBar.compactAppearance = appearance
-                        if #available(iOS 15.0, *) {
-                            navigationController.navigationBar.compactScrollEdgeAppearance = appearance
-                        }
-                    } else {
-                        navigationController.navigationBar.barTintColor = configuration?.theme.toolbarBackgroundColor
-                        navigationController.navigationBar.shadowImage = UIImage()
+                    let appearance = UINavigationBarAppearance()
+                    appearance.configureWithOpaqueBackground()
+                    appearance.backgroundColor = configuration?.theme.toolbarBackgroundColor
+                    appearance.shadowColor = configuration?.theme.toolbarBackgroundColor
+                    navigationController.navigationBar.standardAppearance = appearance
+                    navigationController.navigationBar.scrollEdgeAppearance = appearance
+                    navigationController.navigationBar.compactAppearance = appearance
+                    if #available(iOS 15.0, *) {
+                        navigationController.navigationBar.compactScrollEdgeAppearance = appearance
                     }
 
                     UIApplication.shared.keyWindow?.rootViewController?.present(navigationController, animated: true, completion: nil)

@@ -11,7 +11,9 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
 import ly.img.android.pesdk.backend.decoder.ImageSource
 import ly.img.android.pesdk.backend.model.state.manager.SettingsList
+import ly.img.android.pesdk.backend.model.state.manager.StateHandler
 import ly.img.android.pesdk.backend.model.state.manager.configure
+import ly.img.android.pesdk.ui.activity.EditorActivity
 import ly.img.android.pesdk.ui.activity.EditorBuilder
 import ly.img.android.pesdk.ui.model.state.UiConfigTheme
 import org.json.JSONArray
@@ -24,7 +26,11 @@ import ly.img.android.pesdk.utils.MainThreadRunnable
 import ly.img.android.sdk.config.Configuration
 import ly.img.android.sdk.config.skipIfNotExists
 import ly.img.android.serializer._3.IMGLYFileReader
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
+/** FlutterIMGLY */
 open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener, PluginRegistry.ActivityResultListener, PermissionRequest.Response {
 
   /** The *MethodChannel* that will handle the communication between Flutter and native Android.
@@ -40,11 +46,13 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
   /** The current *Result* handling the message channel. */
   var result: MethodChannel.Result? = null
 
-  /** The currently used `Configuration`. */
+  /** The currently used *Configuration*. */
   var currentConfig: Configuration? = null
 
   /** The currently used *FlutterPluginBinding*. */
   private var binding: FlutterPlugin.FlutterPluginBinding? = null
+
+  private var currentEditorUID: String = UUID.randomUUID().toString()
 
   /** Called as soon as the plugin is attached to the engine. */
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -105,10 +113,11 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
    *
    * @param settingsList The *SettingsList* which configures the editor.
    */
-  fun startEditor(settingsList: SettingsList, resultID: Int) {
+  fun startEditor(settingsList: SettingsList, resultID: Int, activity: Class<out EditorActivity>) {
     val currentActivity = this.currentActivity ?: throw RuntimeException("Can't start the Editor because there is no current activity")
+    currentEditorUID = UUID.randomUUID().toString()
     MainThreadRunnable {
-      EditorBuilder(currentActivity)
+      EditorBuilder(currentActivity, activity)
               .setSettingsList(settingsList)
               .startActivityForResult(currentActivity, resultID, arrayOfNulls(0))
       settingsList.release()

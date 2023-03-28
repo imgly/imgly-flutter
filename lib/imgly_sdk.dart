@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui' as dart_ui;
 
 /// Configuration options and asset definitions for image and
@@ -1210,12 +1209,8 @@ final _serializationExportTypeValues = _EnumValues({
 /// Video export configuration if the editor supports video editing.
 class VideoOptions {
   /// Creates new [VideoOptions].
-  VideoOptions({
-    this.bitRate,
-    this.codec,
-    this.format,
-    this.quality,
-  });
+  VideoOptions(
+      {this.bitRate, this.codec, this.format, this.quality, this.segments});
 
   /// The bit rate in bits per second to use when exporting to VideoCodec.H264.
   /// ```
@@ -1245,12 +1240,24 @@ class VideoOptions {
   /// ```
   final double? quality;
 
+  /// Whether the video editor should include the video segments of the
+  /// composition in the `VideoEditorResult`.
+  /// **Please note:** If enabled, you need to release the result via
+  /// `VideoEditorResult.release()` after processing the video segments
+  /// in order to prevent memory leaks.
+  /// ```
+  /// // Defaults to:
+  /// false
+  /// ```
+  final bool? segments;
+
   /// Converts [VideoOptions] for JSON parsing.
   Map<String, dynamic> _toJson() => {
         "bitRate": bitRate,
         "codec": codec == null ? null : _videoCodecValues.reverse[codec],
         "format": format == null ? null : _videoFormatValues.reverse[format],
         "quality": quality,
+        "segments": segments
       }..removeWhere((key, value) => value == null);
 }
 
@@ -2490,11 +2497,11 @@ class TextOptions {
   /// overlay buttons on the canvas.
   /// ```
   /// // Defaults to:
-  /// [CanvasAction.add, CanvasAction.delete,
-  /// CanvasAction.bringToFront, CanvasAction.undo,
-  /// CanvasAction.redo]
+  /// [TextCanvasAction.add, TextCanvasAction.delete,
+  /// TextCanvasAction.bringToFront, TextCanvasAction.undo,
+  /// TextCanvasAction.redo]
   /// ```
-  final List<StickerCanvasAction>? canvasActions;
+  final List<TextCanvasAction>? canvasActions;
 
   /// Defines the default text color for newly created text.
   /// ```
@@ -2594,7 +2601,7 @@ class TextOptions {
       "canvasActions": _canvasActions == null
           ? null
           : List<dynamic>.from(
-              _canvasActions.map((x) => _stickerCanvasActionValues.reverse[x])),
+              _canvasActions.map((x) => _textCanvasActionValues.reverse[x])),
       "defaultTextColor": defaultTextColor?._toJson(),
       "fonts": _fonts == null
           ? null
@@ -2631,6 +2638,37 @@ final _textActionValues = _EnumValues({
   "color": TextAction.color,
   "font": TextAction.font,
   "duration": TextAction.duration
+});
+
+/// A text canvas action.
+enum TextCanvasAction {
+  /// Add a new text.
+  add,
+
+  /// Bring the selected text to the front.
+  bringToFront,
+
+  /// Delete the selected text.
+  delete,
+
+  /// Flip the selected text.
+  flip,
+
+  /// Redo the action(s).
+  redo,
+
+  /// Undo the action(s).
+  undo
+}
+
+/// The corresponding values to the [TextCanvasAction].
+final _textCanvasActionValues = _EnumValues({
+  "add": TextCanvasAction.add,
+  "bringtofront": TextCanvasAction.bringToFront,
+  "delete": TextCanvasAction.delete,
+  "flip": TextCanvasAction.flip,
+  "redo": TextCanvasAction.redo,
+  "undo": TextCanvasAction.undo
 });
 
 /// A font.
