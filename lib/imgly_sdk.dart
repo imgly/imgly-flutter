@@ -22,6 +22,7 @@ class Configuration {
       this.tools,
       this.transform,
       this.audio,
+      this.audioProviders,
       this.composition,
       this.trim,
       this.watermark,
@@ -33,6 +34,9 @@ class Configuration {
 
   /// Configuration options for `Tool.audio`.
   final AudioOptions? audio;
+
+  /// A list of audio providers. (Currently only Soundstripe is available)
+  final List<BasicAudioProvider>? audioProviders;
 
   /// Configuration options for `Tool.brush`.
   final BrushOptions? brush;
@@ -144,6 +148,9 @@ class Configuration {
     final jsonObject = {
       "adjustment": adjustment?._toJson(),
       "audio": audio?._toJson(),
+      "audioProviders": audioProviders == null
+          ? null
+          : List<dynamic>.from(audioProviders!.map((e) => e._toJson())),
       "brush": brush?._toJson(),
       "composition": composition?._toJson(),
       "enableZoom": enableZoom,
@@ -3541,6 +3548,45 @@ class AudioClipCategory extends _NamedItem {
     }
     return map..removeWhere((key, value) => value == null);
   }
+}
+
+/// An abstract class that represents the minimum info required to use an audio provider.
+///
+/// Note: the audio provider must be supported by IMGLY, like Soundstripe
+abstract class BasicAudioProvider {
+  BasicAudioProvider(this.identifier, this.baseURL, {this.headers});
+
+  /// The provider identifier.
+  final String identifier;
+
+  /// The audio provider base URL
+  final String baseURL;
+
+  /// The headers for the baseURL request. This should be at least an Authorization header for security purposes.
+  final Map<String, String>? headers;
+
+  /// Converts a [AudioClipCategory] for JSON parsing.
+  Map<String, dynamic> _toJson() {
+    final map = <String, dynamic>{
+      "identifier": identifier,
+      "baseURL": baseURL,
+      "headers": headers,
+    };
+    return map..removeWhere((key, value) => value == null);
+  }
+}
+
+/// A [SoundstripeAudioProvider] represents an entry point to the Soundstripe Audio API.
+class SoundstripeAudioProvider extends BasicAudioProvider {
+  /// Creates an audio provider consuming Soundstripe Audio API.
+  ///
+  /// - Parameters:
+  ///   - baseURL: The base URL of your endpoint.
+  ///   - headers: The headers for the URL request.
+  ///
+  /// - Note: The [SoundstripeAudioProvider] assumes that your endpoint is mirroring the official [Soundstripe API](https://docs.soundstripe.com).
+  SoundstripeAudioProvider(String baseURL, {Map<String, String>? headers})
+      : super('soundstripe', baseURL, headers: headers);
 }
 
 /// An audio clip.

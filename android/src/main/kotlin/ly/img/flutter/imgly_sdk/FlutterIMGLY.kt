@@ -13,6 +13,7 @@ import ly.img.android.pesdk.backend.decoder.ImageSource
 import ly.img.android.pesdk.backend.model.state.manager.SettingsList
 import ly.img.android.pesdk.backend.model.state.manager.StateHandler
 import ly.img.android.pesdk.backend.model.state.manager.configure
+import ly.img.android.pesdk.soundstripe.model.state.SoundstripeSettings
 import ly.img.android.pesdk.ui.activity.EditorActivity
 import ly.img.android.pesdk.ui.activity.EditorBuilder
 import ly.img.android.pesdk.ui.model.state.UiConfigTheme
@@ -48,6 +49,8 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
 
   /** The currently used *Configuration*. */
   var currentConfig: Configuration? = null
+
+  var soundstripeSettings: SoundstripeSettings? = null
 
   /** The currently used *FlutterPluginBinding*. */
   private var binding: FlutterPlugin.FlutterPluginBinding? = null
@@ -114,6 +117,9 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
    * @param settingsList The *SettingsList* which configures the editor.
    */
   fun startEditor(settingsList: SettingsList, resultID: Int, activity: Class<out EditorActivity>) {
+
+    applyAudioProviders(settingsList, currentConfig)
+
     val currentActivity = this.currentActivity ?: throw RuntimeException("Can't start the Editor because there is no current activity")
     currentEditorUID = UUID.randomUUID().toString()
     MainThreadRunnable {
@@ -214,6 +220,43 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
    */
   open fun present(asset: String, config: HashMap<String, Any>?, serialization: String?) { }
 
+  open fun applyAudioProviders(settingsList: SettingsList, config: Configuration?) {
+    if(config != null && soundstripeSettings != null) {
+      settingsList.configure<SoundstripeSettings> { settings ->
+        settings.proxySourceUri = soundstripeSettings?.proxySourceUri
+        soundstripeSettings?.proxyHeader?.forEach { header ->
+          if(header.value != null) {
+            settings.addHeader(header.key, header.value!!)
+          }
+        }
+      }
+      //If audio providers are set then ignore any AudioClip configuration
+      config.audio = null
+
+      config.applyOn(settingsList)
+    }
+  }
+  open fun resolveAudioProviders(confs: MutableMap<String, Any>) {
+    try {
+      val audioProvidersListConf: List<HashMap<String, Any>>? = confs["audioProviders"] as? List<HashMap<String, Any>>
+      audioProvidersListConf?.forEach { providerConf ->
+        when(providerConf["identifier"]) {
+          "soundstripe" -> {
+            val baseURL = providerConf["baseURL"] as? String
+            val headers: HashMap<String, String>? = providerConf["headers"] as? HashMap<String, String>
+            if(baseURL != null) {
+              soundstripeSettings = SoundstripeSettings()
+              soundstripeSettings?.proxySourceUri = baseURL
+              headers?.forEach {
+                soundstripeSettings?.addHeader(it.key, it.value)
+              }
+            }
+          }
+        }
+      }
+    } catch (_: Exception) {}
+  }
+
   /**
    * Resolves the nested assets from a configuration map.
    *
@@ -221,6 +264,10 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
    * @return The resolved configuration as a *MutableHashMap<String, Any>*.
    */
   fun resolveAssets(source: MutableMap<String, Any>) : MutableMap<String, Any> {
+
+    // Resolve the audio providers.
+    resolveAudioProviders(source)
+
     // Resolve the audio clips.
     val audioCategoryKeyPath = "audio.categories"
     val audioCategoryResolvingKeyPaths = listOf("thumbnailURI")
