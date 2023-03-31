@@ -180,11 +180,20 @@ open class FlutterIMGLY: NSObject {
             }
 
             let toolbarMode = updatedDictionary.value(forKeyPath: "toolbarMode", defaultValue: nil) as? String
-
+            let audioProviders = self.audioProviders(configurationData: updatedDictionary)
+            
             configuration = Configuration(builder: { (builder) in
                 builder.assetCatalog = assetCatalog
                 do {
                     try builder.configure(from: updatedDictionary)
+                    if(!audioProviders.isEmpty) {
+                        
+                        if(!self.hasAudioClipCategories(configurationData: updatedDictionary)) {
+                            // This is a workaround to avoid an empty SoundstripeCategory being added by default.
+                            builder.assetCatalog.audioClips = []
+                        }
+                        builder.assetCatalog.audioClips.append(contentsOf: audioProviders)
+                    }
                 } catch let error {
                     self.result?(FlutterError(code: "Configuration could not be applied.", message: "The provided configuration is invalid. For futher information see the error attached in the details.", details: "ERROR:\(error.localizedDescription)"))
                     self.result = nil
@@ -223,6 +232,38 @@ open class FlutterIMGLY: NSObject {
                 self.result = nil
             }
         }
+    }
+    
+    private func audioProviders(configurationData: IMGLYDictionary) -> [AudioProviderCategory] {
+        var providers: [AudioProviderCategory] = []
+        
+        let audioProvidersListConf = configurationData.value(forKeyPath: "audioProviders", defaultValue: nil) as? [Dictionary<String, Any>]
+        
+        if(audioProvidersListConf != nil) {
+            audioProvidersListConf?.forEach({ providerConf in
+                switch (providerConf.value(forKeyPath: "identifier", defaultValue: nil) as? String) {
+                    case "soundstripe":
+                        var soundstripeProvider: SoundstripeAudioProvider?
+                        let baseURL = providerConf.value(forKeyPath: "baseURL", defaultValue: "") as? String;
+                        let headers = providerConf.value(forKeyPath: "headers", defaultValue: nil) as? Dictionary<String, String>
+                        soundstripeProvider = SoundstripeAudioProvider(
+                            baseURL: baseURL ?? "",
+                            headers: headers
+                        )
+                    providers.append(SoundstripeAudioClipCategory(provider: soundstripeProvider!))
+                    break
+                    case .none: return
+                    case .some(_): return
+                }
+            })
+        }
+        return providers
+    }
+    
+    private func hasAudioClipCategories(configurationData: IMGLYDictionary) -> Bool {
+        let audioClipCategoryListConf = (configurationData.value(forKeyPath: "audio", defaultValue: nil) as? Dictionary<String, Any>)?.value(forKeyPath: "categories", defaultValue: nil) as? [Dictionary<String, Any>]
+        
+        return audioClipCategoryListConf != nil && !audioClipCategoryListConf!.isEmpty
     }
 
     private func configureToolbar(_ builder: ConfigurationBuilder) {
