@@ -27,7 +27,8 @@ class Configuration {
       this.trim,
       this.watermark,
       this.theme,
-      this.toolbarMode});
+      this.toolbarMode,
+      this.singleToolMode});
 
   /// Configuration options for `Tool.adjustment`.
   final AdjustmentOptions? adjustment;
@@ -139,6 +140,14 @@ class Configuration {
   /// ToolbarMode.bottom
   /// ```
   final ToolbarMode? toolbarMode;
+
+  /// Controls if the editor is used in single tool mode.
+  /// Prerequisite is that only one tool is in [tools].
+  /// ```
+  /// // Defaults to:
+  /// true
+  /// ```
+  final bool? singleToolMode;
 
   /// Converts a [Configuration] to a [Map].
   Map<String, dynamic> toJson() {
