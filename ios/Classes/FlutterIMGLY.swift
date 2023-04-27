@@ -43,9 +43,6 @@ open class FlutterIMGLY: NSObject {
     /// The configuration defined in Dart is already applied to the provided `ConfigurationBuilder` object.
     public static var configureWithBuilder: IMGLYConfigurationBlock?
 
-    /// The `Error` thrown in case that the license is invalid.
-    private var licenseError: NSError?
-
     /// The currently presented `MediaEditViewController`.
     private var mediaEditViewController: MediaEditViewController?
 
@@ -76,6 +73,7 @@ open class FlutterIMGLY: NSObject {
         public static let kErrorUnableToUnlock = "E_UNABLE_TO_UNLOCK"
         public static let kErrorUnableToLoad = "E_UNABLE_TO_LOAD"
         public static let kErrorUnableToExport = "E_UNABLE_TO_EXPORT"
+        public static let kErrorMultipleRequests = "E_MULTIPLE_REQUESTS"
 
         public static let kExportTypeFileURL = "file-url"
         public static let kExportTypeDataURL = "data-url"
@@ -120,13 +118,6 @@ open class FlutterIMGLY: NSObject {
 
         // Run on the main queue in order to align with the license validation.
         DispatchQueue.main.async {
-            // Check if the license could be validated.
-            if let error_ = self.licenseError {
-                self.result?(FlutterError(code: "License validation error.", message: "The license could not be validated.", details: error_.localizedDescription))
-                self.result = nil
-                return
-            }
-
             // Retrieve the configuration.
             let assetCatalog = AssetCatalog.defaultItems
             let configurationDictionary = configurationData ?? [String: Any]()
@@ -260,6 +251,14 @@ open class FlutterIMGLY: NSObject {
             options.applyButtonConfigurationClosure = toolbarButtonClosure
             options.discardButtonConfigurationClosure = toolbarButtonClosure
         }
+        builder.configureTrimToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
+        builder.configureClipTrimToolController { options in
+            options.applyButtonConfigurationClosure = toolbarButtonClosure
+            options.discardButtonConfigurationClosure = toolbarButtonClosure
+        }
         builder.configureAudioToolController { options in
             options.applyButtonConfigurationClosure = toolbarButtonClosure
             options.discardButtonConfigurationClosure = toolbarButtonClosure
@@ -366,7 +365,8 @@ open class FlutterIMGLY: NSObject {
         let validLicensePath = licensePath + ".ios"
         guard let key = FlutterIMGLY.registrar?.lookupKey(forAsset: validLicensePath),
               let url = Bundle.main.url(forResource: key, withExtension: nil) else {
-            self.handleLicenseError(with: nil)
+            self.result?(FlutterError(code: "License validation failed.", message: "Unlocking the SDK failed due to:", details: "The license file could not be found in the bundle."))
+            self.result = nil
             return
         }
         self.unlockWithLicenseFile(at: url)
@@ -375,26 +375,6 @@ open class FlutterIMGLY: NSObject {
     /// Unlocks the SDK witha license from a given file.
     /// - Parameter url: The url where the file is located.
     open func unlockWithLicenseFile(at url: URL) {}
-
-    /// Handles any error that occurs while unlocking the license.
-    /// - Parameter error: The `NSError` of the unlocking process.
-    public func handleLicenseError(with error: NSError?) {
-        self.result = nil
-        self.licenseError = nil
-        if let error_ = error {
-            if error_.domain == "ImglyKit.IMGLY.Error" {
-                switch error_.code {
-                case 3:
-                    return
-                default:
-                    self.licenseError = error_
-                    return
-                }
-            } else {
-                self.licenseError = error_
-            }
-        }
-    }
 }
 
 /// Extension for converting wrappers.

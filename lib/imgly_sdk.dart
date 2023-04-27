@@ -1,4 +1,4 @@
-import 'dart:ui' as dart_ui;
+import 'dart:ui';
 
 /// Configuration options and asset definitions for image and
 /// video editing tasks.
@@ -272,7 +272,7 @@ class Theme {
   /// items, the sliders' thumb outline and filled track, and selected fonts
   /// in the editor.
   /// If `null` the default system's `tintColor` is used.
-  final dart_ui.Color? tintColor;
+  final Color? tintColor;
 
   /// The primary tint color used for texts, buttons, icons, and control
   /// elements with static background colors in the editor.
@@ -280,14 +280,14 @@ class Theme {
   /// // Defaults to:
   /// Colors.white
   /// ```
-  final dart_ui.Color? primaryColor;
+  final Color? primaryColor;
 
   /// The background color used for the background of the canvas in the editor.
   /// ```
   /// // Defaults to:
   /// Colors.black
   /// ```
-  final dart_ui.Color? backgroundColor;
+  final Color? backgroundColor;
 
   /// The background color of the menu and accesory controls above the menu
   /// in the editor.
@@ -295,7 +295,7 @@ class Theme {
   /// // Defaults to:
   /// Color(0xff1c1c1c)
   /// ```
-  final dart_ui.Color? menuBackgroundColor;
+  final Color? menuBackgroundColor;
 
   /// The background color of the toolbar that hosts the title of the active
   /// tool, the discard, and the apply button in the editor.
@@ -303,7 +303,7 @@ class Theme {
   /// // Defaults to:
   /// Color(0xff212121)
   /// ```
-  final dart_ui.Color? toolbarBackgroundColor;
+  final Color? toolbarBackgroundColor;
 
   /// Converts a [Theme] for JSON parsing.
   Map<String, dynamic> _toJson() => {
@@ -900,7 +900,7 @@ class BrushOptions {
           : List<dynamic>.from(
               _canvasActions.map((x) => _brushCanvasActionValues.reverse[x])),
       "colors": colors?._toJson(),
-      "defaultColor": defaultColor?._toJson(),
+      "defaultColor": defaultColor?.value,
       "defaultHardness": defaultHardness,
       "defaultSize": defaultSize,
       "maximumHardness": maximumHardness,
@@ -953,25 +953,6 @@ final _brushCanvasActionValues = _EnumValues({
   "undo": BrushCanvasAction.undo
 });
 
-/// A color.
-class Color {
-  /// Creates a new [Color].
-  Color(this.color);
-
-  /// A color can be represented as:
-  /// - `List<double>`: which encodes a single gray value or a RGB(A)
-  ///    tuple of floating point values where
-  ///    each channel is defined in the range of `[0, 1]`.
-  /// - `String`: which is a hex color code string of a 12-bit RGB,
-  ///    24-bit RGB, or 32-bit ARGB color value.
-  /// - `double`: which is the the binary representation of a 32-bit
-  ///    ARGB color value.
-  final dynamic color;
-
-  /// Converts a [Color] for JSON parsing.
-  dynamic _toJson() => color;
-}
-
 /// A named color.
 class NamedColor {
   /// Creates a new [NamedColor].
@@ -984,7 +965,7 @@ class NamedColor {
   final String name;
 
   /// Converts a [NamedColor] for JSON parsing.
-  Map<String, dynamic> _toJson() => {"color": color._toJson(), "name": name};
+  Map<String, dynamic> _toJson() => {"color": color.value, "name": name};
 }
 
 /// A color palette of named colors.
@@ -2611,7 +2592,7 @@ class TextOptions {
           ? null
           : List<dynamic>.from(
               _canvasActions.map((x) => _textCanvasActionValues.reverse[x])),
-      "defaultTextColor": defaultTextColor?._toJson(),
+      "defaultTextColor": defaultTextColor?.value,
       "fonts": _fonts == null
           ? null
           : List<dynamic>.from(_fonts.map((x) => x._toJson())),
@@ -3174,9 +3155,9 @@ class DuoToneFilter extends Filter {
   /// Converts a [DuoToneFilter] for JSON parsing.
   @override
   Map<String, dynamic> _toJson() => {
-        "darkColor": darkColor._toJson(),
+        "darkColor": darkColor.value,
         "identifier": identifier,
-        "lightColor": lightColor._toJson(),
+        "lightColor": lightColor.value,
         "name": name,
       }..removeWhere((key, value) => value == null);
 }
