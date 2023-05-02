@@ -50,7 +50,16 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
   /** The currently used *Configuration*. */
   var currentConfig: Configuration? = null
 
+  /** The *Configuration* for SoundStripe provider */
   var soundstripeSettings: SoundstripeSettings? = null
+
+  /** IMGLY constants for the plugin use. */
+  object IMGLYConstants {
+    const val K_ERROR_UNABLE_TO_UNLOCK = "E_UNABLE_TO_UNLOCK"
+    const val K_ERROR_UNABLE_TO_LOAD = "E_UNABLE_TO_LOAD"
+    const val K_ERROR_MULTIPLE_REQUESTS = "E_MULTIPLE_REQUESTS"
+    const val K_ERROR_UNABLE_TO_RELEASE = "E_UNABLE_TO_RELEASE"
+  }
 
   /** The currently used *FlutterPluginBinding*. */
   private var binding: FlutterPlugin.FlutterPluginBinding? = null
@@ -143,15 +152,15 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
         licenseContent?.also {
           this.unlockWithLicense(it)
         } ?: run {
-          result?.error("Invalid license.", "The license content can not be empty.", null)
+          result?.error(IMGLYConstants.K_ERROR_UNABLE_TO_UNLOCK, "The license content can not be empty.", null)
           result = null
         }
       } ?: run {
-        result?.error("Invalid license.", "The license can not be found..", null)
+        result?.error(IMGLYConstants.K_ERROR_UNABLE_TO_UNLOCK, "The license can not be found..", null)
         result = null
       }
     } else {
-      result?.error("Invalid license.", "The license can not be nil.", null)
+      result?.error(IMGLYConstants.K_ERROR_UNABLE_TO_UNLOCK, "The license can not be nil.", null)
       result = null
     }
   }
