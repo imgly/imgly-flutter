@@ -1,6 +1,6 @@
 name: imgly_sdk
 description: The official base plugin for the photo_editor_sdk and video_editor_sdk Flutter plugins.
-version: 2.8.1
+version: 3.0.0
 homepage: https://img.ly
 repository: https://github.com/imgly/imgly-flutter
 
