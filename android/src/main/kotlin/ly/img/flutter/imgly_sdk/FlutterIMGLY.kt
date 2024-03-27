@@ -193,10 +193,10 @@ open class FlutterIMGLY: FlutterPlugin, MethodChannel.MethodCallHandler, Activit
       settingsList.configure<UiConfigTheme> { loadSettings ->
         val themeIdentifier = when (theme) {
           "light" -> {
-            R.style.Theme_Imgly_Light
+            ly.img.android.pesdk.ui.R.style.Theme_Imgly_Light
           }
           "dark" -> {
-            R.style.Theme_Imgly
+            ly.img.android.pesdk.ui.R.style.Theme_Imgly
           }
           else -> {
             ImageSource.getResources().getIdentifier(theme, "style", currentActivity?.packageName)
