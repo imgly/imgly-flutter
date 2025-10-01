@@ -1,9 +1,9 @@
 PODS:
   - Flutter (1.0.0)
-  - imgly_sdk (3.2.0):
+  - imgly_sdk (3.3.0):
     - Flutter
     - imglyKit (~> 11.4)
-  - imglyKit (11.10.0)
+  - imglyKit (11.10.2)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
@@ -20,10 +20,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/imgly_sdk/ios"
 
 SPEC CHECKSUMS:
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  imgly_sdk: e512f1e5804683ec0d521e797a15626432ed4538
-  imglyKit: 709ba7929c4b6633797938065b5514126e1dc235
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  imgly_sdk: 9af492a2ff07766d996a8431fbff958461dd3b2f
+  imglyKit: 0e5afb6a03202228b17aa4e9a387d9c7f371a94c
 
-PODFILE CHECKSUM: c4c93c5f6502fe2754f48404d3594bf779584011
+PODFILE CHECKSUM: 0dbd5a87e0ace00c9610d2037ac22083a01f861d
 
 COCOAPODS: 1.15.2
